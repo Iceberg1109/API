@@ -9,9 +9,8 @@ const AuthController = require('../controller/auth');
 //middleware created previously
 router.post('/signup', passport.authenticate('signup', { session : false }) , async (req, res, next) => {
   res.json({ 
-    message : 'Signup successful',
-    user : req.user 
-  });
+    status: req.user,
+  });  
 });
 
 router.post('/login', async (req, res, next) => {

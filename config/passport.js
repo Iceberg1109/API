@@ -11,9 +11,14 @@ passport.use('signup', new localStrategy({
       //Save the information provided by the user to the the database
       const user = await UserModel.create({ email, password });
       //Send the user information to the next middleware
-      return done(null, user);
+      return done(null, "success");
     } catch (error) {
-      done(error);
+      if (error.code == 11000) {
+        done(null, "exist");
+      }
+      else {
+        done(null, "error");
+      }
     }
 }));
 
