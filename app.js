@@ -4,25 +4,26 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 const app = express();
 const cors = require('cors');
-const UserModel = require('./model/model');
+const config = require('./config/config');
 
-mongoose.connect('mongodb://127.0.0.1:27017/shopify-back', { useMongoClient : true });
+mongoose.connect(config.mongodb_url, { useMongoClient : true });
 mongoose.connection.on('error', error => console.log(error) );
 mongoose.Promise = global.Promise;
 
 require('./config/passport');
 
 app.use( bodyParser.urlencoded({ extended : false }) );
+app.use(bodyParser.json());
 app.use(cors());
 app.options('*', cors());
 
-const auth_routes = require('./routes/auth');
-const secureRoute = require('./routes/route');
+const auth_routes = require('./routes/auth.route');
+const secureRoute = require('./routes/main.route');
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
     next();
 });
-app.use('/', auth_routes);
+app.use('/auth', auth_routes);
 //We plugin our jwt strategy as a middleware so only verified users can access this route
 app.use('/api', passport.authenticate('jwt', { session : false }), secureRoute );
 
