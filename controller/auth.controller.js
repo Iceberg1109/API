@@ -89,7 +89,7 @@ module.exports = {
           subject: 'Password help has arrived!',
           html: '<h4><b>Reset Password</b></h4>' +
           '<p>To reset your password, complete this form:</p>' +
-          '<a href=' + config.front_url + '/auth/reset/?token=' + token + '">' + "Reset Password" + '</a>' +
+          '<a href=' + config.front_url + '/reset-password/' + token + '>' + "Reset Password" + '</a>' +
           '<br><br>' +
           '<p>--Team</p>'
         };
