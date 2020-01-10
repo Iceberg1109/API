@@ -20,8 +20,7 @@ router.post('/forgot-pwd', async (req, res, next) => {
   AuthController.forgotPwd(req, res, next);
 });
 
-router.post('/reset-pwd/:token', (req, res) => {
-  console.log('route', req.body, req.params.token);
+router.post('/reset-pwd/', (req, res) => {
   AuthController.resetPwd(req, res);
 });
 module.exports = router;

@@ -93,7 +93,6 @@ module.exports = {
           '<br><br>' +
           '<p>--Team</p>'
         };
-        
         smtpTransport.sendMail(mailOptions, function (err, info) {
           // console.log('sendMail', err, info);
           if (!err) return res.json({ message: 'success' });
@@ -105,12 +104,12 @@ module.exports = {
     });
   },
   resetPwd: function(req, res) {
-    console.log('reset-password', req.body, req.params.token);
+    console.log('reset-password', req.body);
     var password = req.body.password;
     async.waterfall([
       function (done) {
         UserModel.findOne({
-          resetPasswordToken: req.params.token,
+          resetPasswordToken: req.body.token,
           resetPasswordExpires: {
             $gt: Date.now()
           }
@@ -120,8 +119,7 @@ module.exports = {
             return res.json({status: "no user"});
           }
           console.log('reset password', user);
-          var salt = bcrypt.genSaltSync(10);
-          var hash = bcrypt.hashSync(password, salt);
+
           user.password = password;
           user.resetPasswordToken = "";
           user.resetPasswordExpires = null;
