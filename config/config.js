@@ -7,8 +7,8 @@ var default_auth_email = "smartdev951109@gmail.com"
 var default_auth_password = "jinxiansong1109"
 
 module.exports = {
-  mongodb_url:`mongodb://127.0.0.1:27017/shopify-back`,
-  front_url: `https://localhost:3000`,
+  mongodb_url:`mongodb://localhost:27017/shopify-back`,
+  front_url: `https://localhost:5000`,
   email: {
     auth_email: function () {
       return default_auth_email;
