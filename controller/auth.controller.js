@@ -6,6 +6,7 @@ var async = require('async');
 const config = require('../config/config');
 var  hbs = require('nodemailer-express-handlebars');
 var crypto = require('crypto');
+var bcrypt = require('bcrypt');
 
 module.exports = {
   login: async function (req, res, next) {
@@ -92,6 +93,7 @@ module.exports = {
           '<br><br>' +
           '<p>--Team</p>'
         };
+        
         smtpTransport.sendMail(mailOptions, function (err, info) {
           // console.log('sendMail', err, info);
           if (!err) return res.json({ message: 'success' });
@@ -118,11 +120,11 @@ module.exports = {
             return res.json({status: "no user"});
           }
           console.log('reset password', user);
-          var salt = bcrypt.genSaltSync(saltRounds);
+          var salt = bcrypt.genSaltSync(10);
           var hash = bcrypt.hashSync(password, salt);
-          user.password = hash;
-          user.resetPasswordToken = undefined;
-          user.resetPasswordExpires = undefined;
+          user.password = password;
+          user.resetPasswordToken = "";
+          user.resetPasswordExpires = null;
           user.save(function (err) {
             if (!err) return res.json({status: "success"});
             return res.json({status: "success"});

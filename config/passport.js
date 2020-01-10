@@ -10,7 +10,7 @@ passport.use('signup', new localStrategy({
     try {
       
       //Save the information provided by the user to the the database
-      const user = await UserModel.create({ email, password, resetPasswordToken: "" });
+      const user = await UserModel.create({ email, password, resetPasswordToken: "", resetPasswordExpires: null });
       //Send the user information to the next middleware
       return done(null, "success");
     } catch (error) {
