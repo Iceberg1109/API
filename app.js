@@ -6,7 +6,10 @@ const app = express();
 const cors = require('cors');
 const config = require('./config/config');
 
-mongoose.connect(config.mongodb_url, { useMongoClient : true });
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useUnifiedTopology', true);
+mongoose.set('useCreateIndex', true);
+mongoose.connect(config.mongodb_url);
 mongoose.connection.on('error', error => console.log(error) );
 mongoose.Promise = global.Promise;
 
