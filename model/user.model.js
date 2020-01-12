@@ -19,6 +19,10 @@ const UserSchema = new Schema({
   resetPasswordExpires : {
     type: Date,
     required: false,
+  },
+  isAdmin: {
+    type: Boolean,
+    required: true,
   }
 });
 

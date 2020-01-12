@@ -10,7 +10,8 @@ passport.use('signup', new localStrategy({
     try {
       
       //Save the information provided by the user to the the database
-      const user = await UserModel.create({ email, password, resetPasswordToken: "", resetPasswordExpires: null });
+      const user = await UserModel.create({ email, password, 
+        resetPasswordToken: "", resetPasswordExpires: null, isAdmin: false });
       //Send the user information to the next middleware
       return done(null, "success");
     } catch (error) {
@@ -29,7 +30,6 @@ passport.use('login', new localStrategy({
   passwordField : 'password'
 }, async (email, password, done) => {
   try {
-    console.log("email", email, password);
     //Find the user associated with the email provided by the user
     const user = await UserModel.findOne({ email });
     if( !user ){

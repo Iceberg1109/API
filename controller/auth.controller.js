@@ -30,7 +30,7 @@ module.exports = {
           //Sign the JWT token and populate the payload with the user email and id
           const token = jwt.sign({ user : body },'top_secret');
           //Send back the token to the user
-          return res.json({status: "success", toeken: token });
+          return res.json({status: "success", toeken: token, isAdmin: user.isAdmin });
         });
       } catch (error) {
         return next(error);
@@ -94,7 +94,6 @@ module.exports = {
           '<p>--Team</p>'
         };
         smtpTransport.sendMail(mailOptions, function (err, info) {
-          // console.log('sendMail', err, info);
           if (!err) return res.json({ message: 'success' });
           else return done(err);
         });
