@@ -12,6 +12,8 @@ const querystring = require('querystring');
 
 const request = require('request-promise');
 
+require('dotenv').config()
+
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useUnifiedTopology', true);
 mongoose.set('useCreateIndex', true);
