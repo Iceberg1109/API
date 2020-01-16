@@ -38,8 +38,8 @@ module.exports = {
     })(req, res, next);
   },
   forgotPwd: function (req, res) {
-    var auth_email = config.email.auth_email();
-    var auth_email_pwd= config.email.auth_password();
+    var auth_email = process.env.MAIL_USERNAME;
+    var auth_email_pwd= process.env.MAIL_PASSWORD;
 
     async.waterfall([
       function (done) {
@@ -85,13 +85,13 @@ module.exports = {
         smtpTransport.use('compile', hbs(handlebarsOptions));
         var mailOptions = {
           to: user.email,
-          from: "email@a.com",
+          from: "support@udsdropshipping.com",
           subject: 'Password help has arrived!',
           html: '<h4><b>Reset Password</b></h4>' +
           '<p>To reset your password, complete this form:</p>' +
-          '<a href=' + config.front_url + '/reset-password/' + token + '>' + "Reset Password" + '</a>' +
+          '<a href=' + process.env.FRONT_URL + '/reset-password/' + token + '>' + "Reset Password" + '</a>' +
           '<br><br>' +
-          '<p>--Team</p>'
+          '<p>UDS Support Team</p>'
         };
         smtpTransport.sendMail(mailOptions, function (err, info) {
           if (!err) return res.json({ message: 'success' });
