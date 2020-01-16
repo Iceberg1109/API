@@ -105,8 +105,8 @@ app.get('/shopify/callback', (req, res) => {
     // DONE: Exchange temporary code for a permanent access token
     const accessTokenRequestUrl = 'https://' + shop + '/admin/oauth/access_token';
     const accessTokenPayload = {
-      client_id: apiKey,
-      client_secret: apiSecret,
+      client_id: process.env.SHOPIFY_APIKEY,
+      client_secret: process.env.SHOPIFY_APISECRET,
       code,
     };
     console.log(accessTokenPayload, accessTokenRequestUrl);
