@@ -46,9 +46,6 @@ app.use(function(err, req, res, next) {
 });
 const forwardingAddress = 'https://0b146ceb.ngrok.io';
 const scopes = 'read_products';
-const apiKey = '5fb407e0f7fbc118b15a1f4a55ae236a';
-const apiSecret =  'bb000cf186bdb297cdc4d3ae2d9d9b5c';
-
 
 app.get('/shopify', (req, res) => {
   const shop = req.query.shop;
@@ -56,7 +53,7 @@ app.get('/shopify', (req, res) => {
     const state = nonce();
     const redirectUri = forwardingAddress + '/shopify/callback';
     const installUrl = 'https://' + shop +
-      '/admin/oauth/authorize?client_id=' + apiKey +
+      '/admin/oauth/authorize?client_id=' + process.env.SHOPIFY_APIKEY +
       '&scope=' + scopes +
       '&state=' + state +
       '&redirect_uri=' + redirectUri;
