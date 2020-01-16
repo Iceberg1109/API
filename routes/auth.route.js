@@ -23,4 +23,8 @@ router.post('/forgot-pwd', async (req, res, next) => {
 router.post('/reset-pwd/', (req, res) => {
   AuthController.resetPwd(req, res);
 });
+
+router.post('/shopify/', (req, res) => {
+  AuthController.shopifyAuth(req, res);
+});
 module.exports = router;
