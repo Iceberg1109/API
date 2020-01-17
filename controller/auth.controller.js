@@ -6,7 +6,6 @@ var async = require('async');
 
 var  hbs = require('nodemailer-express-handlebars');
 var crypto = require('crypto');
-var bcrypt = require('bcrypt');
 
 module.exports = {
   login: async function (req, res, next) {

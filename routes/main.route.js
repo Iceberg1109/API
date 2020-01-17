@@ -11,6 +11,9 @@ const UserController = require('../controller/user.controller');
 router.post('/user/info', (req, res, next) => {
   UserController.getUserInfo(req, res);
 });
+router.post('/user/reset', (req, res, next) => {
+  UserController.resetUserPwd(req, res);
+});
 
 // Product related routes
 // add new product to the shopify store
