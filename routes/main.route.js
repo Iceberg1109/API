@@ -7,9 +7,9 @@ const ProductController = require('../controller/product.controller');
 
 // User related routes
 // Return the user's info
-router.get('/user', (req, res, next) => {
+router.post('/user', (req, res, next) => {
   console.log(req.user);
-  
+  res.status(200).send();
 });
 
 // Product related routes
