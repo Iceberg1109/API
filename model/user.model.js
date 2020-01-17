@@ -12,6 +12,14 @@ const UserSchema = new Schema({
     type : String,
     required : true 
   },
+  storeName : {
+    type : String,
+    required : false 
+  },
+  shopifyToken : {
+    type : String,
+    required : false 
+  },
   resetPasswordToken : {
     type : String,
     required : false,

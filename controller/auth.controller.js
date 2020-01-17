@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const UserModel = require('../model/user.model');
 var async = require('async');
-const config = require('../config/config');
+
 var  hbs = require('nodemailer-express-handlebars');
 var crypto = require('crypto');
 var bcrypt = require('bcrypt');

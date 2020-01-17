@@ -1,6 +1,7 @@
 const express = require('express');
-
 const router = express.Router();
+
+const ProductController = require('../controller/product.controller');
 
 //Lets say the route below is very sensitive and we want only authorized users to have access
 
@@ -12,6 +13,11 @@ router.get('/profile', (req, res, next) => {
     user : req.user,
     token : req.query.secret_token
   })
+});
+
+router.post('/product/add', (req, res, next) => {
+  console.log("product add here");
+  ProductController.addProduct(req, res);
 });
 
 module.exports = router;

@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 const app = express();
 const cors = require('cors');
-const config = require('./config/config');
 
 const crypto = require('crypto');
 const cookie = require('cookie');
@@ -17,7 +16,7 @@ require('dotenv').config()
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useUnifiedTopology', true);
 mongoose.set('useCreateIndex', true);
-mongoose.connect(config.mongodb_url);
+mongoose.connect(process.env.MONGODB_URL);
 mongoose.connection.on('error', error => console.log(error) );
 mongoose.Promise = global.Promise;
 
@@ -43,26 +42,6 @@ app.use('/api', passport.authenticate('jwt', { session : false }), secureRoute )
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.json({ error : err });
-});
-const forwardingAddress = 'https://0b146ceb.ngrok.io';
-const scopes = 'read_products';
-
-app.get('/shopify', (req, res) => {
-  const shop = req.query.shop;
-  if (shop) {
-    const state = nonce();
-    const redirectUri = forwardingAddress + '/shopify/callback';
-    const installUrl = 'https://' + shop +
-      '/admin/oauth/authorize?client_id=' + process.env.SHOPIFY_APIKEY +
-      '&scope=' + scopes +
-      '&state=' + state +
-      '&redirect_uri=' + redirectUri;
-
-    res.cookie('state', state);
-    res.redirect(installUrl);
-  } else {
-    return res.status(400).send('Missing shop parameter. Please add ?shop=your-development-shop.myshopify.com to your request');
-  }
 });
 
 app.get('/shopify/callback', (req, res) => {
@@ -105,8 +84,8 @@ app.get('/shopify/callback', (req, res) => {
     // DONE: Exchange temporary code for a permanent access token
     const accessTokenRequestUrl = 'https://' + shop + '/admin/oauth/access_token';
     const accessTokenPayload = {
-      client_id: process.env.SHOPIFY_APIKEY,
-      client_secret: process.env.SHOPIFY_APISECRET,
+      client_id: process.env.SHOPIFY_PARTNER_APIKEY,
+      client_secret: process.env.SHOPIFY_PARTNER_APISECRET,
       code,
     };
     console.log(accessTokenPayload, accessTokenRequestUrl);
