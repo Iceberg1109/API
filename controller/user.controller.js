@@ -21,16 +21,5 @@ module.exports = {
       if (err) return res.json({status : 'failed'});
       return res.json({status : 'success'});
     });
-    // var user = await UserModel.findById(req.user._id);
-    // const validate = await user.isValidPassword(old_pwd);
-    // if( !validate ){
-    //   console.log("wrong pwd");
-      
-    // }
-    // //Send the user information to the next middleware
-    // user.password = "123";
-    // user.resetPasswordToken = "token";
-    // user.update();
-    
   }
 }
