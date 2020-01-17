@@ -8,7 +8,7 @@ const UserController = require('../controller/user.controller');
 
 // User related routes
 // Return the user's info
-router.post('/user', (req, res, next) => {
+router.post('/user/info', (req, res, next) => {
   UserController.getUserInfo(req, res);
 });
 
