@@ -6,7 +6,6 @@ const app = express();
 const cors = require('cors');
 
 const crypto = require('crypto');
-const cookie = require('cookie');
 const querystring = require('querystring');
 
 const request = require('request-promise');
@@ -28,7 +27,8 @@ app.use(cors());
 app.options('*', cors());
 
 const auth_routes = require('./routes/auth.route');
-const secureRoute = require('./routes/main.route');
+const admin_route = require('./routes/admin.route');
+const app_route = require('./routes/main.route');
 const nonce = require('nonce')();
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
@@ -36,7 +36,8 @@ app.use(function(req, res, next) {
 });
 app.use('/auth', auth_routes);
 //We plugin our jwt strategy as a middleware so only verified users can access this route
-app.use('/api', passport.authenticate('jwt', { session : false }), secureRoute );
+app.use('/admin/api/', passport.authenticate('jwt', { session : false }), admin_route );
+app.use('/api/', passport.authenticate('jwt', { session : false }), app_route );
 
 //Handle errors
 app.use(function(err, req, res, next) {

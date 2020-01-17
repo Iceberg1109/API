@@ -1,16 +1,16 @@
-const passport = require('passport');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const UserModel = require('../model/user.model');
-var async = require('async');
-
-var  hbs = require('nodemailer-express-handlebars');
-var crypto = require('crypto');
-var bcrypt = require('bcrypt');
 
 module.exports = {
-  getUserInfo: async function (req, res, next) {
-   
+  getUserInfo: function (req, res, next) {
+
+    UserModel.findById(req.user._id, 'name email', function (err, user) {
+      if (err) return res.json({status: "no user"});
+      console.log("get", user);
+      return res.json({
+        name: user.name,
+        email: user.email,
+      });
+    });
   },
   resetPwd: function(req, res) {
     console.log('reset-password', req.body);
