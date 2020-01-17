@@ -37,8 +37,8 @@ module.exports = {
     })(req, res, next);
   },
   forgotPwd: function (req, res) {
-    var auth_email = process.env.MAIL_USERNAME;
-    var auth_email_pwd= process.env.MAIL_PASSWORD;
+    var MAIL_USERNAME = process.env.MAIL_USERNAME;
+    var MAIL_PASSWORD= process.env.MAIL_PASSWORD;
 
     async.waterfall([
       function (done) {
@@ -73,12 +73,12 @@ module.exports = {
         };
 
         var smtpTransport = nodemailer.createTransport({
-          host: 'smtp.gmail.com',
-          port: 465,
-          secure: true, // use SSL
+          host: 'smtp.mailtrap.io',
+          port: 2525,
+          // secure: true, // use SSL
           auth: {
-            user: auth_email,
-            pass: auth_email_pwd
+            user: MAIL_USERNAME,
+            pass: MAIL_PASSWORD
           }
         });
         smtpTransport.use('compile', hbs(handlebarsOptions));
