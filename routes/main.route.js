@@ -3,18 +3,17 @@ const router = express.Router();
 
 const ProductController = require('../controller/product.controller');
 
-//Lets say the route below is very sensitive and we want only authorized users to have access
+// All routes here are secure, they all require authorization
 
-//Displays information tailored according to the logged in user
-router.get('/profile', (req, res, next) => {
-  //We'll just send back the user details and the token
-  res.json({
-    message : 'You made it to the secure route',
-    user : req.user,
-    token : req.query.secret_token
-  })
+// User related routes
+// Return the user's info
+router.get('/user', (req, res, next) => {
+  console.log(req.user);
+  
 });
 
+// Product related routes
+// add new product to the shopify store
 router.post('/product/add', (req, res, next) => {
   console.log("product add here");
   ProductController.addProduct(req, res);
