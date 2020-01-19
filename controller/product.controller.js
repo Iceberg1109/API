@@ -1,16 +1,10 @@
-const passport = require('passport');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+TopClient = require('node-taobao-topclient').default;
+
 const UserModel = require('../model/user.model');
-var async = require('async');
 
-var  hbs = require('nodemailer-express-handlebars');
-var crypto = require('crypto');
-var bcrypt = require('bcrypt');
-
-Fetch_GraphQL = async fields => {
+Fetch_GraphQL = async (url, fields) => {
   const response = await fetch(
-    `https://http://uds-dropshippingstore.myshopify.com//admin/api/2019-07/graphql.json`,
+    url,
     {
       method: "POST",
       headers: {
@@ -25,13 +19,32 @@ Fetch_GraphQL = async fields => {
 };
 
 module.exports = {
+  getProductInfo: async function (req, res) {
+    product_id = req.body.product_id;
+    var client = new TopClient({
+      'appkey': process.env.Ali_APPKEY,
+      'appsecret': process.env.Ali_APPSECRET,
+      'REST_URL': 'http://gw.api.taobao.com/router/rest'
+    });
+    
+    client.execute('aliexpress.postproduct.redefining.findaeproductbyidfordropshipper', {
+      product_id,
+      // 'local_country':'RU',
+      // 'local_language':'ru'
+    }, function(error, response) {
+      if (!error) console.log(response);
+      else console.log(error);
+    })
+  },
   addProduct: async function  (req, res) {
     title = req.body.title;
-    description = req.body.description;
+    descriptionHtml = req.body.descriptionHtml;
+    images =  req.body.images;
+    options =  req.body.options;
+    variants =  req.body.variants;
+    console.log("Add product", title, descriptionHtml, images, options, variants);
 
-    console.log("Add product", title, description);
-
-    const UPDATE_METAFIELDS = JSON.stringify({
+    const NEW_PRODCUT = JSON.stringify({
       query: `mutation($input: ProductInput!) {
                 productCreate(input: $input)
                 {
@@ -42,19 +55,17 @@ module.exports = {
                 }
               }`,
       variables: {
-        input: {
-          title,
-          descriptionHtml: description,
-          options : ["Size", "Color"],
-          variants: [
-            {price: "25", options : ["42", "blue"]},
-            {price: "25", options : ["42", "red"]},
-          ]
-        }
+        title,
+        descriptionHtml,
+        images,
+        options,
+        variants
       }
     });
+    var user = await UserModel.findById(req.user._id);
 
-    // const response = await this.Fetch_GraphQL(UPDATE_METAFIELDS);
-    console.log(response);
+    var api_url = "http://" + user.storeName + ".myshopify.com//admin/api/2019-07/graphql.json";
+    const response = await this.Fetch_GraphQL(api_url, NEW_PRODCUT);
+    // console.log(response);
   }
 }
