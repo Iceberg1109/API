@@ -24,6 +24,14 @@ const UserSchema = new Schema({
     type : String,
     required : false 
   },
+  importedProducts: {
+    type : Array,
+    required : false 
+  },
+  myProducts: {
+    type : Array,
+    required : false 
+  },
   resetPasswordToken : {
     type : String,
     required : false,
