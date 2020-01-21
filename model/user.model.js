@@ -20,7 +20,7 @@ const UserSchema = new Schema({
     type : String,
     required : false 
   },
-  shopifyToken : {
+  storeAccessToken : {
     type : String,
     required : false 
   },

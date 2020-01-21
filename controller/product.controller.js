@@ -1,4 +1,9 @@
-TopClient = require('node-taobao-topclient').default;
+var TopClient = require('node-taobao-topclient').default;
+// var webdriver = require ('selenium-webdriver');
+let webdriver = require('selenium-webdriver');
+var By = webdriver.By;
+let chrome = require('selenium-webdriver/chrome');
+let chromedriver = require('chromedriver');
 
 const UserModel = require('../model/user.model');
 
@@ -21,7 +26,8 @@ Fetch_GraphQL = async (url, fields) => {
 module.exports = {
   getProductInfo: async function (req, res) {
     product_id = req.body.product_id;
-    var client = new TopClient({
+
+    /*var client = new TopClient({
       'appkey': process.env.Ali_APPKEY,
       'appsecret': process.env.Ali_APPSECRET,
       'REST_URL': 'http://gw.api.taobao.com/router/rest'
@@ -53,7 +59,26 @@ module.exports = {
       else{
         console.log(error);
       } 
-    })
+    })*/
+    var product_details = {
+      title: "Product Title",
+      descriptionHtml: "Description HTML",
+      images: [{ src: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg" },
+        { "src": "https://images-na.ssl-images-amazon.com/images/I/61gZIYJ9xlL._SY606_.jpg" }],
+      options: ["Size", "Color"],
+      variants:  [
+        {
+          imageSrc: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg",
+          price: "25",
+          options : ["42", "blue"]
+        },
+        {
+          imageSrc: "https://images-na.ssl-images-amazon.com/images/I/61gZIYJ9xlL._SY606_.jpg",
+          price: "25", 
+          options : ["42", "red"]
+        }]
+    };
+    res.json({status: "success", data: product_details});
   },
   addProduct: async function  (req, res) {
     var product_details = {
