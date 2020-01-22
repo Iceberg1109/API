@@ -9,6 +9,7 @@ module.exports = {
       return res.json({
         name: user.name,
         email: user.email,
+        storeName: user.storeName
       });
     });
   },
