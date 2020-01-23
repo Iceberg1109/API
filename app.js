@@ -4,15 +4,14 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 const app = express();
 const cors = require("cors");
-
-//Shopify essential libraries
 const querystring = require("querystring");
 const crypto = require("crypto");
 const request = require("request-promise");
-//
 
+// DotEnv config
 require("dotenv").config();
 
+// MongoDB config
 mongoose.set("useNewUrlParser", true);
 mongoose.set("useUnifiedTopology", true);
 mongoose.set("useCreateIndex", true);
@@ -20,6 +19,7 @@ mongoose.connect(process.env.MONGODB_URL);
 mongoose.connection.on("error", error => console.log(error));
 mongoose.Promise = global.Promise;
 
+// Passport fot authentication and authorization
 require("./config/passport");
 
 app.use( bodyParser.urlencoded({ extended : false }) );
@@ -35,10 +35,11 @@ app.use(bodyParser.json({
 app.use(cors());
 app.options("*", cors());
 
-const auth_routes   = require('./routes/auth.route');
-const normal_routes = require('./routes/normal.route');
-const admin_route   = require('./routes/admin.route');
-const app_route     = require('./routes/main.route');
+// Main Routing
+const auth_routes   = require('./routes/auth.route'); // Authentication Routes
+const normal_routes = require('./routes/normal.route'); // Routes, don't need authorization
+const admin_route   = require('./routes/admin.route'); // Admin Routes, need authorization
+const app_route     = require('./routes/main.route'); // Routes, need authorization
 
 const nonce = require('nonce')();
 app.use(function(req, res, next) {
