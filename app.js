@@ -41,25 +41,26 @@ const normal_routes = require('./routes/normal.route'); // Routes, don't need au
 const admin_route   = require('./routes/admin.route'); // Admin Routes, need authorization
 const app_route     = require('./routes/main.route'); // Routes, need authorization
 
-const nonce = require('nonce')();
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
     next();
 });
-// These routes don't require authorization
+
+// Authorization doesn't require
 app.use('/auth', auth_routes);
 app.use('/normal', normal_routes);
-//We plugin our jwt strategy as a middleware so only verified users can access this route
+// JWT authorization required
 app.use('/admin/api/', passport.authenticate('jwt', { session : false }), admin_route );
 app.use('/api/', passport.authenticate('jwt', { session : false }), app_route );
 
 //Shopify essential info
+const nonce = require('nonce')();
 const forwardingAddress = process.env.BACKEND_URL;
 const apiKey = process.env.SHOPIFY_PARTNER_APIKEY;
 const apiSecret = process.env.SHOPIFY_PARTNER_APISECRET;
 const scopes = ["read_products", "write_products"];
-//
 
+// Shopify store authorization, get shop name and shop access token
 app.get("/shopify", async (req, res) => {
   //save shop and email in 'user' table
   const shop = req.query.shop;
