@@ -62,11 +62,11 @@ const scopes = ["read_products", "write_products"];
 
 // Shopify store authorization, get shop name and shop access token
 app.get("/shopify", async (req, res) => {
-  //save shop and email in 'user' table
+  //save shop name to the corresponding user
   const shop = req.query.shop;
   const email = req.query.email;
 
-  var user = await UserModel.updateOne({email}, {storeName: shop}, function(err, doc) {
+  await UserModel.updateOne({email}, {storeName: shop}, function(err, doc) {
     if (err) console.log(err);
   });
 
@@ -141,6 +141,7 @@ app.get("/shopify/callback", (req, res) => {
       code
     };
     const { FRONT_URL } = process.env;
+    // Get shop access token and save it to the corresponding user
     request
       .post(accessTokenRequestUrl, { json: accessTokenPayload })
       .then(async accessTokenResponse => {
@@ -168,6 +169,6 @@ app.use(function(err, req, res, next) {
   res.json({ error : err });
 });
 
-app.listen(8001, () => {
+app.listen(process.env.SERVER_PORT, () => {
   console.log('Server started');
 });
