@@ -1,3 +1,5 @@
+const fetch = require("node-fetch");
+
 var TopClient = require('node-taobao-topclient').default;
 // var webdriver = require ('selenium-webdriver');
 let webdriver = require('selenium-webdriver');
@@ -7,7 +9,7 @@ let chromedriver = require('chromedriver');
 
 const UserModel = require('../model/user.model');
 
-Fetch_GraphQL = async (url, fields) => {
+Fetch_GraphQL = async (url, fields, ACCESSTOKEN) => {
   const response = await fetch(
     url,
     {
@@ -88,7 +90,7 @@ module.exports = {
       options: req.body.options,
       variants: req.body.variants
     };
-
+    
     console.log("Add product", product_details);
 
     const NEW_PRODCUT = JSON.stringify({
@@ -101,22 +103,36 @@ module.exports = {
                   }
                 }
               }`,
-      variables: product_details
+      variables: {
+        input: product_details
+      }
     });
+
     var user = await UserModel.findById(req.user._id);
 
-    var api_url = "http://" + user.storeName + ".myshopify.com//admin/api/2019-07/graphql.json";
-    const response = await this.Fetch_GraphQL(api_url, NEW_PRODCUT);
-    console.log("after adding product => ", response);
+    var api_url = "https://" + user.storeName + "/admin/api/2020-01/graphql.json";
+    try {
+      const response = await Fetch_GraphQL(api_url, NEW_PRODCUT, user.storeAccessToken);
+      console.log("after adding product => ", response);
 
-    // Add this product to the user's products' list
-    var user = await UserModel.findById(req.user._id);
-    var my_products = user.myProducts;
-    my_products.push(product_details);
+      // Add this product to the user's products' list
+      //var user = await UserModel.findById(req.user._id);
+      console.log(response.data.productCreate.userErrors.length);
+      if (response.errors || response.data.productCreate.userErrors.length > 0) {
+        return res.json({status : 'failed'});
+      }
 
-    user = await UserModel.updateOne({_id:req.user._id}, {myProducts: my_products}, function(err, doc) {
-      if (err) return res.json({status : 'failed'});
-      return res.json({status : 'success'});
-    });
+      var my_products = user.myProducts;
+      my_products.push(product_details);
+
+      user = await UserModel.updateOne({_id:req.user._id}, {myProducts: my_products}, function(err, doc) {
+        if (err) return res.json({status : 'failed'});
+        return res.json({status : 'success'});
+      });
+    }
+    catch(err) {
+      console.log("adding product err => ", err);
+      res.json({status : 'failed'});
+    }
   }
 }
