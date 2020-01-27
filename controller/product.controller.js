@@ -9,14 +9,14 @@ let chromedriver = require('chromedriver');
 
 const UserModel = require('../model/user.model');
 
-Fetch_GraphQL = async (url, fields, ACCESSTOKEN) => {
+Fetch_GraphQL = async (url, fields, storeAccessToken) => {
   const response = await fetch(
     url,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Shopify-Access-Token": ACCESSTOKEN
+        "X-Shopify-Access-Token": storeAccessToken
       },
       body: fields
     }

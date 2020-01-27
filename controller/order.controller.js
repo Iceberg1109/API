@@ -1,15 +1,16 @@
 const crypto = require('crypto');
+const fetch = require("node-fetch");
 
 const UserModel = require('../model/user.model');
 
-Fetch_GraphQL = async (url, fields) => {
+Fetch_GraphQL = async (url, fields, storeAccessToken) => {
   const response = await fetch(
     url,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Shopify-Access-Token": ACCESSTOKEN
+        "X-Shopify-Access-Token": storeAccessToken
       },
       body: fields
     }
@@ -20,14 +21,6 @@ Fetch_GraphQL = async (url, fields) => {
 
 module.exports = {
   addWebhook: async function  (req, res) {
-    var product_details = {
-      title: req.body.title,
-      descriptionHtml: req.body.descriptionHtml,
-      images: req.body.images,
-      options: req.body.options,
-      variants: req.body.variants
-    };
-
     console.log("Add product", product_details);
 
     const ADD_WEBHOOK = JSON.stringify({
@@ -39,8 +32,8 @@ module.exports = {
     var user = await UserModel.findById(req.user._id);
 
     var api_url = "http://" + user.storeName + ".myshopify.com//admin/api/2019-07/graphql.json";
-    // const response = await this.Fetch_GraphQL(api_url, ADD_WEBHOOK);
-    // console.log(response);
+    const response = await Fetch_GraphQL(api_url, ADD_WEBHOOK, user.storeAccessToken);
+    console.log(response);
   },
   orderCreated: function(req, res) {
     generated_hash = crypto
