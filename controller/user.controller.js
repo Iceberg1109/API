@@ -3,7 +3,7 @@ const UserModel = require('../model/user.model');
 
 module.exports = {
   getUserInfo: function (req, res, next) {
-    UserModel.findById(req.user._id, 'name email', function (err, user) {
+    UserModel.findById(req.user._id, 'name email storeName', function (err, user) {
       if (err) return res.json({status: "no user"});
       console.log("get", user);
       return res.json({

@@ -4,9 +4,13 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 const app = express();
 const cors = require("cors");
+const cookie = require('cookie');
 const querystring = require("querystring");
 const crypto = require("crypto");
 const request = require("request-promise");
+const nonce = require('nonce')();
+
+const UserModel = require('./model/user.model');
 
 // DotEnv config
 require("dotenv").config();
@@ -54,7 +58,6 @@ app.use('/admin/api/', passport.authenticate('jwt', { session : false }), admin_
 app.use('/api/', passport.authenticate('jwt', { session : false }), app_route );
 
 //Shopify essential info
-const nonce = require('nonce')();
 const forwardingAddress = process.env.BACKEND_URL;
 const apiKey = process.env.SHOPIFY_PARTNER_APIKEY;
 const apiSecret = process.env.SHOPIFY_PARTNER_APISECRET;
@@ -98,15 +101,16 @@ app.get("/shopify", async (req, res) => {
 });
 
 app.get("/shopify/callback", (req, res) => {
-  // console.log(req.query);
   const { shop, hmac, code, state } = req.query;
   console.log("HEADERS!!!!", req.headers, req.query);
   const stateCookie = cookie.parse(req.headers.cookie).state;
+  console.log("state Cookie => ", stateCookie);
   if (state !== stateCookie) {
     return res.status(403).send("Request origin cannot be verified");
   }
-
+  console.log("if 1");
   if (shop && hmac && code) {
+    console.log("if 2");
     // DONE: Validate request is from Shopify
     const map = Object.assign({}, req.query);
     delete map["signature"];
@@ -127,11 +131,11 @@ app.get("/shopify/callback", (req, res) => {
     } catch (e) {
       hashEquals = false;
     }
-
+    console.log("if 3");
     if (!hashEquals) {
       return res.status(400).send("HMAC validation failed");
     }
-
+    console.log("if 4");
     // DONE: Exchange temporary code for a permanent access token
     const accessTokenRequestUrl =
       "https://" + shop + "/admin/oauth/access_token";
@@ -141,11 +145,13 @@ app.get("/shopify/callback", (req, res) => {
       code
     };
     const { FRONT_URL } = process.env;
+    console.log("if 5");
     // Get shop access token and save it to the corresponding user
     request
       .post(accessTokenRequestUrl, { json: accessTokenPayload })
       .then(async accessTokenResponse => {
         const accessToken = accessTokenResponse.access_token;
+        console.log("Acess Token here => ", accessToken);
         await UserModel.updateOne({storeName: shop}, {storeAccessToken: accessToken}, function(err, doc) {
           if (err) console.log(err);
         });

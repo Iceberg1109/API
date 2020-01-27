@@ -106,8 +106,8 @@ module.exports = {
     var user = await UserModel.findById(req.user._id);
 
     var api_url = "http://" + user.storeName + ".myshopify.com//admin/api/2019-07/graphql.json";
-    // const response = await this.Fetch_GraphQL(api_url, NEW_PRODCUT);
-    // console.log(response);
+    const response = await this.Fetch_GraphQL(api_url, NEW_PRODCUT);
+    console.log("after adding product => ", response);
 
     // Add this product to the user's products' list
     var user = await UserModel.findById(req.user._id);
