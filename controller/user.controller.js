@@ -1,5 +1,22 @@
 var bcrypt = require('bcrypt');
+const fetch = require("node-fetch");
 const UserModel = require('../model/user.model');
+
+Fetch_GraphQL = async (url, fields, storeAccessToken) => {
+  const response = await fetch(
+    url,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Access-Token": storeAccessToken,
+      },
+      body: fields
+    }
+  );
+  const responseJson = await response.json();
+  return responseJson;
+};
 
 module.exports = {
   getUserInfo: function (req, res, next) {
@@ -32,5 +49,32 @@ module.exports = {
       if (err) return res.json({status : 'failed'});
       return res.json({status : 'success'});
     });
-  }
+  },
+  addWebhook: async function  (req, res) {
+    const NEW_WEBHOOK =  JSON.stringify({
+      query: `mutation {
+        webhookSubscriptionCreate(topic: ORDERS_CREATE, webhookSubscription: {callbackUrl: "https://7896f79f.ngrok.io/normal/order/created", format: JSON}) {
+          userErrors {
+            field
+            message
+          }
+          webhookSubscription {
+            id
+          }
+        }
+      }
+      `
+    });
+
+    var user = await UserModel.findById(req.user._id);
+
+    console.log("user data => ", user.storeName, user.storeAccessToken);
+    var api_url = "https://" + user.storeName + "/admin/api/2020-01/graphql.json";
+    const response = await Fetch_GraphQL(api_url, NEW_WEBHOOK, user.storeAccessToken);
+    if (response.errors || response.data.webhookSubscriptionCreate.userErrors.length > 0) {
+      return res.json({status : 'failed'});
+    }
+    console.log("hook response => ", response.data.webhookSubscriptionCreate.webhookSubscription.id);
+    res.json({status : 'success'});
+  },
 }

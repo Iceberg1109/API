@@ -11,7 +11,7 @@ const request = require("request-promise");
 const nonce = require('nonce')();
 
 const UserModel = require('./model/user.model');
-
+const OrderController = require('./controller/order.controller');
 // DotEnv config
 require("dotenv").config();
 
@@ -61,7 +61,7 @@ app.use('/api/', passport.authenticate('jwt', { session : false }), app_route );
 const forwardingAddress = process.env.BACKEND_URL;
 const apiKey = process.env.SHOPIFY_PARTNER_APIKEY;
 const apiSecret = process.env.SHOPIFY_PARTNER_APISECRET;
-const scopes = ["read_products", "write_products"];
+const scopes = ["read_products", "write_products", "read_orders", "write_orders"];
 
 // Shopify store authorization, get shop name and shop access token
 app.get("/shopify", async (req, res) => {

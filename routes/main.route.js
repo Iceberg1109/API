@@ -16,10 +16,9 @@ router.post('/user/reset', (req, res, next) => {
   UserController.resetUserPwd(req, res);
 });
 
-router.post('/user/connect-store', (req, res) => {
-  UserController.connectStore(req, res);
+router.post('/user/addhook', (req, res, next) => {
+  UserController.addWebhook(req, res);
 });
-
 // Product related routes
 // add new product to the shopify store
 router.post('/product/info', (req, res, next) => {
