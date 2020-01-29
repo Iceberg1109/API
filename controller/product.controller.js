@@ -7,6 +7,7 @@ var By = webdriver.By;
 let chrome = require('selenium-webdriver/chrome');
 let chromedriver = require('chromedriver');
 
+const ProductModel = require('../model/product.model');
 const UserModel = require('../model/user.model');
 
 Fetch_GraphQL = async (url, fields, storeAccessToken) => {
@@ -26,7 +27,58 @@ Fetch_GraphQL = async (url, fields, storeAccessToken) => {
 };
 
 module.exports = {
-  getProductInfo: async function (req, res) {
+  getSelfProducts: function (req, res) {
+    ProductModel.find({}, function(err, products) {
+      if (err) {
+        console.log(err);
+        return res.json({status: "fail"});
+      }
+      var productMap = [];
+      
+      var idx = 0;
+      products.forEach(function(product) {
+        productMap.push(product);
+        idx ++;
+      });
+  
+      res.json({status: "success",count: idx, products: productMap});  
+    });
+  },
+  getSaleProducts: function (req, res) {
+    ProductModel.find({onSale: true, category: req.body.category}, function(err, products) {
+      if (err) {
+        console.log(err);
+        return res.json({status: "fail"});
+      }
+      var productMap = [];
+      
+      var idx = 0;
+      products.forEach(function(product) {
+        productMap.push(product);
+        idx ++;
+      });
+  
+      res.json({status: "success",count: idx, products: productMap});  
+    });
+  },
+  getTopSellingProducts: function (req, res) {
+    ProductModel.find({}).sort('-soldCount').limit(req.body.count).exec(function(err, products){
+      if (err) {
+        console.log(err);
+        return res.json({status: "fail"});
+      }
+      var productMap = [];
+      
+      var idx = 0;
+      products.forEach(function(product) {
+        productMap.push(product);
+        idx ++;
+      });
+  
+      res.json({status: "success",count: idx, products: productMap});  
+    });
+  },
+  getAliProductInfo: async function (req, res) {
     product_id = req.body.product_id;
 
     /*var client = new TopClient({
@@ -82,7 +134,26 @@ module.exports = {
     };
     res.json({status: "success", data: product_details});
   },
-  addProduct: async function  (req, res) {
+  importProduct: async function  (req, res) {
+    var product_details = {
+      title: req.body.title,
+      descriptionHtml: req.body.descriptionHtml,
+      images: req.body.images,
+      options: req.body.options,
+      variants: req.body.variants
+    };
+    
+    var user = await UserModel.findById(req.user._id);
+
+    var importedProducts = user.importedProducts;
+    importedProducts.push(product_details);
+
+    user = await UserModel.updateOne({_id:req.user._id}, {importedProducts: importedProducts}, function(err, doc) {
+      if (err) return res.json({status : 'failed'});
+      return res.json({status : 'success'});
+    });
+  },
+  addProduct2Store: async function  (req, res) {
     var product_details = {
       title: req.body.title,
       descriptionHtml: req.body.descriptionHtml,

@@ -12,7 +12,15 @@ router.post('/user/info', (req, res, next) => {
   UserController.getUserInfo(req, res);
 });
 
-router.post('/user/reset', (req, res, next) => {
+router.post('/user/imported', (req, res, next) => {
+  UserController.getImportedProducts(req, res);
+});
+
+router.post('/user/my_products', (req, res, next) => {
+  UserController.getMyProducts(req, res);
+});
+
+router.post('/user/resetPwd', (req, res, next) => {
   UserController.resetUserPwd(req, res);
 });
 
@@ -20,12 +28,23 @@ router.post('/user/addhook', (req, res, next) => {
   UserController.addWebhook(req, res);
 });
 // Product related routes
-// add new product to the shopify store
-router.post('/product/info', (req, res, next) => {
-  ProductController.getProductInfo(req, res);
+router.post('/product/listAll', (req, res, next) => {
+  ProductController.getSelfProducts(req, res);
 });
-router.post('/product/add', (req, res, next) => {
-  ProductController.addProduct(req, res);
+router.post('/product/listSale', (req, res, next) => {
+  ProductController.getSaleProducts(req, res);
+});
+router.post('/product/listTop', (req, res, next) => {
+  ProductController.getTopSellingProducts(req, res);
+});
+router.post('/ali_product/info', (req, res, next) => {
+  ProductController.getAliProductInfo(req, res);
+});
+router.post('/product/import', (req, res, next) => { // import new product
+  ProductController.importProduct(req, res);
+});
+router.post('/product/add2store', (req, res, next) => { // add new product to the shopify store
+  ProductController.addProduct2Store(req, res);
 });
 
 module.exports = router;

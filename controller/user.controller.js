@@ -24,9 +24,30 @@ module.exports = {
       if (err) return res.json({status: "no user"});
       console.log("get", user);
       return res.json({
+        status: "success",
         name: user.name,
         email: user.email,
         store: user.storeName
+      });
+    });
+  },
+  getMyProducts: function (req, res, next) {
+    UserModel.findById(req.user._id, function (err, user) {
+      if (err) return res.json({status: "no user"});
+      
+      return res.json({
+        status: "success",
+        products: user.myProducts
+      });
+    });
+  },
+  getImportedProducts: function (req, res, next) {
+    UserModel.findById(req.user._id, function (err, user) {
+      if (err) return res.json({status: "no user"});
+      
+      return res.json({
+        status: "success",
+        products: user.importedProducts
       });
     });
   },
