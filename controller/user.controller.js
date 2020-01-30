@@ -20,14 +20,17 @@ Fetch_GraphQL = async (url, fields, storeAccessToken) => {
 
 module.exports = {
   getUserInfo: function (req, res, next) {
-    UserModel.findById(req.user._id, 'name email storeName', function (err, user) {
+    UserModel.findById(req.user._id, function (err, user) {
       if (err) return res.json({status: "no user"});
       console.log("get", user);
       return res.json({
-        status: "success",
-        name: user.name,
-        email: user.email,
-        store: user.storeName
+        status :        "success",
+        name :          user.name,
+        email :         user.email,
+        store :         user.storeName,
+        isAdmin :       user.isAdmin,
+        priceRule :     user.priceRule,
+        salePriceRule : user.salePriceRule
       });
     });
   },
@@ -49,6 +52,20 @@ module.exports = {
         status: "success",
         products: user.importedProducts
       });
+    });
+  },
+  setPriceRule: async function(req, res) {
+    var new_rule = req.body.rule;
+    var user = await UserModel.updateOne({_id:req.user._id}, {priceRule: new_rule}, function(err, doc) {
+      if (err) return res.json({status : 'failed'});
+      return res.json({status : 'success'});
+    });
+  },
+  setSalePriceRule: async function(req, res) {
+    var new_rule = req.body.rule;
+    var user = await UserModel.updateOne({_id:req.user._id}, {salePriceRule: new_rule}, function(err, doc) {
+      if (err) return res.json({status : 'failed'});
+      return res.json({status : 'success'});
     });
   },
   resetUserPwd: async function(req, res) {

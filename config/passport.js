@@ -12,7 +12,7 @@ passport.use('signup', new localStrategy({
       var name = req.body.name;
       //Save the information provided by the user to the the database
       const user = await UserModel.create({ name, email, password,
-        resetPasswordToken: "", resetPasswordExpires: null, isAdmin: false, 
+        resetPasswordToken: "", resetPasswordExpires: null, isAdmin: false, priceRule: 2, salePriceRule: 3,
         storeName: "", shopifyToken: "" });
       //Send the user information to the next middleware
       return done(null, "success");

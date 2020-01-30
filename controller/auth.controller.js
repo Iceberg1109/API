@@ -29,7 +29,7 @@ module.exports = {
           //Sign the JWT token and populate the payload with the user email and id
           const token = jwt.sign({ user : body },'top_secret');
           //Send back the token to the user
-          return res.json({status: "success", token, isAdmin: user.isAdmin });
+          return res.json({status: "success", token });
         });
       } catch (error) {
         return next(error);

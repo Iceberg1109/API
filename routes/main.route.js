@@ -16,17 +16,26 @@ router.post('/user/imported', (req, res, next) => {
   UserController.getImportedProducts(req, res);
 });
 
-router.post('/user/my_products', (req, res, next) => {
+router.post('/user/my-products', (req, res, next) => {
   UserController.getMyProducts(req, res);
 });
 
-router.post('/user/resetPwd', (req, res, next) => {
+router.post('/user/reset-pwd', (req, res, next) => {
   UserController.resetUserPwd(req, res);
 });
 
 router.post('/user/addhook', (req, res, next) => {
   UserController.addWebhook(req, res);
 });
+
+router.post('/user/set-rule', (req, res, next) => {
+  UserController.setPriceRule(req, res);
+});
+
+router.post('/user/set-sale-rule', (req, res, next) => {
+  UserController.setSalePriceRule(req, res);
+});
+
 // Product related routes
 router.post('/product/listAll', (req, res, next) => {
   ProductController.getSelfProducts(req, res);

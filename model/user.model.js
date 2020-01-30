@@ -32,6 +32,14 @@ const UserSchema = new Schema({
     type : Array,
     required : false 
   },
+  priceRule: {
+    type: Number,
+    required: true
+  },
+  salePriceRule: {
+    type: Number,
+    required: true
+  },
   resetPasswordToken : {
     type : String,
     required : false,
