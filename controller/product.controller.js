@@ -83,13 +83,8 @@ module.exports = {
     product_id = req.body.product_id;
 
     //https://oauth.taobao.com/authorize?response_type=token&client_id=12345678&state=1212&view=web&redirect_uri=Callback URL
-    
-    // var client = new TopClient({
-    //   'appkey': process.env.Ali_APPKEY,
-    //   'appsecret': process.env.Ali_APPSECRET,
-    //   'REST_URL': 'http://gw.api.taobao.com/router/rest'
-    // });
-    var client = new TopClient(process.env.Ali_APPKEY, process.env.Ali_APPSECRET, {
+   
+    /*var client = new TopClient(process.env.Ali_APPKEY, process.env.Ali_APPSECRET, {
       endpoint: 'http://gw.api.taobao.com/router/rest',
       useValidators: false,
       rawResponse: false
@@ -123,8 +118,27 @@ module.exports = {
       else{
         console.log("ali err => ", error);
       } 
-    })
-    
+    })*/
+    /* Dummny Data */
+    var product_details = {
+      title: "Product Title",
+      descriptionHtml: "Description HTML",
+      images: [{ src: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg" },
+        { "src": "https://images-na.ssl-images-amazon.com/images/I/61gZIYJ9xlL._SY606_.jpg" }],
+      options: ["Size", "Color"],
+      variants:  [
+        {
+          imageSrc: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg",
+          price: "25",
+          options : ["42", "blue"]
+        },
+        {
+          imageSrc: "https://images-na.ssl-images-amazon.com/images/I/61gZIYJ9xlL._SY606_.jpg",
+          price: "25", 
+          options : ["42", "red"]
+        }]
+    };
+    res.json({status: "success", data: product_details});
   },
   importProduct: async function  (req, res) {
     var product_details = {
@@ -197,5 +211,98 @@ module.exports = {
       console.log("adding product err => ", err);
       res.json({status : 'failed'});
     }
+  },
+  startPayment: async function  (req, res) {
+    var product_details = {
+      id: req.id,
+      price: req.body.descriptionHtml,
+      images: req.body.images,
+      options: req.body.options,
+      variants: req.body.variants
+    };
+    
+    var payment = {
+      "intent": "authorize",
+      "payer": {
+        "payment_method": "paypal"
+      },
+      "redirect_urls": {
+        "return_url": "http://127.0.0.1:3000/success",
+        "cancel_url": "http://127.0.0.1:3000/err"
+      },
+      "transactions": [{
+        "item_list": {
+            "items": [{
+                "name": "media dvd",
+                "sku": "001",
+                "price": "39.00",
+                "currency": "USD",
+                "quantity": 1
+            }]
+        },
+        "amount": {
+          "total": 39.00,
+          "currency": "USD"
+        },
+        "description": " a book on mean stack "
+      }]
+    }
+
+    createPay( payment ) 
+    .then( ( transaction ) => {
+        var id = transaction.id; 
+        var links = transaction.links;
+        var counter = links.length; 
+        console.log("transaction:", transaction);
+        while( counter -- ) {
+            if ( links[counter].method == 'REDIRECT') {
+                return res.redirect( links[counter].href )
+            }
+        }
+    })
+    .catch( ( err ) => { 
+        console.log( err ); 
+        res.redirect('/err');
+    });
+  },
+  executePayment: async function  (req, res) {
+    console.log(req.query); 
+//    res.redirect('/success.html'); 
+    const payerId = req.query.PayerID;
+    const paymentId = req.query.paymentId;
+    
+    const execute_payment_json = {
+        "payer_id" : payerId, 
+        "transactions" : [{
+            "amount" : {
+                "currency": "USD",
+                "total": "39.00"
+            }
+        }]
+    };
+
+    paypal.payment.execute(paymentId, execute_payment_json, (error, payment) => {
+        if(error) {
+            console.log(error.response);
+            throw error;
+        } else {
+            console.log("Get Payment Response");
+            console.log(JSON.stringify(payment));
+            res.redirect('/success.html'); 
+        }
+    });
   }
+}
+
+var createPay = ( payment ) => {
+  return new Promise( ( resolve , reject ) => {
+      paypal.payment.create( payment , function( err , payment ) {
+       if ( err ) {
+           reject(err); 
+       }
+      else {
+          resolve(payment); 
+      }
+      }); 
+  });
 }

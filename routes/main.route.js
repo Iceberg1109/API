@@ -55,5 +55,11 @@ router.post('/product/import', (req, res, next) => { // import new product
 router.post('/product/add2store', (req, res, next) => { // add new product to the shopify store
   ProductController.addProduct2Store(req, res);
 });
+router.post('/product/buy', (req, res, next) => { // start buying process
+  ProductController.startPayment(req, res);
+});
+router.post('/product/buy-success', (req, res) => { // execute payment
+  ProductController.executePayment(req, res);
+});
 
 module.exports = router;
