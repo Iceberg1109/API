@@ -16,6 +16,10 @@ router.post('/user/imported', (req, res, next) => {
   UserController.getImportedProducts(req, res);
 });
 
+router.post('/user/imported/edit', (req, res, next) => {
+  UserController.getImportedProducts(req, res);
+});
+
 router.post('/user/my-products', (req, res, next) => {
   UserController.getMyProducts(req, res);
 });
