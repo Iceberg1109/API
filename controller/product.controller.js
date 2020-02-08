@@ -159,6 +159,25 @@ module.exports = {
       return res.json({status : 'success'});
     });
   },
+  editImportedProduct: async function  (req, res) {
+    var product_details = {
+      title: req.body.title,
+      descriptionHtml: req.body.descriptionHtml,
+      images: req.body.images,
+      options: req.body.options,
+      variants: req.body.variants
+    };
+    
+    var user = await UserModel.findById(req.user._id);
+
+    var importedProducts = user.importedProducts;
+    importedProducts.push(product_details);
+
+    user = await UserModel.updateOne({_id:req.user._id}, {importedProducts: importedProducts}, function(err, doc) {
+      if (err) return res.json({status : 'failed'});
+      return res.json({status : 'success'});
+    });
+  },
   addProduct2Store: async function  (req, res) {
     var product_details = {
       title: req.body.title,
