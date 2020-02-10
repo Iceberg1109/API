@@ -1,6 +1,7 @@
 const fetch = require("node-fetch");
 
-var TopClient = require('node-taobao-topclient').default;
+// var TopClient = require('node-taobao-topclient').default;
+var TopClient = require('topsdk');
 // var webdriver = require ('selenium-webdriver');
 let webdriver = require('selenium-webdriver');
 var By = webdriver.By;
@@ -81,58 +82,49 @@ module.exports = {
   getAliProductInfo: async function (req, res) {
     product_id = req.body.product_id;
 
-    /*var client = new TopClient({
-      'appkey': process.env.Ali_APPKEY,
-      'appsecret': process.env.Ali_APPSECRET,
-      'REST_URL': 'http://gw.api.taobao.com/router/rest'
+    //https://oauth.taobao.com/authorize?response_type=token&client_id=12345678&state=1212&view=web&redirect_uri=Callback URL
+    
+    // var client = new TopClient({
+    //   'appkey': process.env.Ali_APPKEY,
+    //   'appsecret': process.env.Ali_APPSECRET,
+    //   'REST_URL': 'http://gw.api.taobao.com/router/rest'
+    // });
+    var client = new TopClient(process.env.Ali_APPKEY, process.env.Ali_APPSECRET, {
+      endpoint: 'http://gw.api.taobao.com/router/rest',
+      useValidators: false,
+      rawResponse: false
     });
     
-    client.execute('aliexpress.postproduct.redefining.findaeproductbyidfordropshipper', {
-      product_id,
+    await client.execute('aliexpress.postproduct.redefining.findaeproductbyidfordropshipper', {
+      product_id: product_id,
+      nick: "cn1530062784shpl",
+      session: "500022016051AUgiq17749c1d9Rplafav3trzEIEwjzIv0FcW8oPiPOWtoc6LiX47Yi"
       // 'local_country':'RU',
       // 'local_language':'ru'
     }, async function (error, response) {
       if (!error) {
-        console.log(response);
-        var user = await UserModel.findById(req.user._id);
-        var importedProducts = user.importedProducts;
-        var product_details = {
-          title: req.body.title,
-          descriptionHtml: req.body.descriptionHtml,
-          images: req.body.images,
-          options: req.body.options,
-          variants: req.body.variants
-        };
-        importedProducts.push(product_details);
+        console.log("ali => ", response);
+        // var user = await UserModel.findById(req.user._id);
+        // var importedProducts = user.importedProducts;
+        // var product_details = {
+        //   title: req.body.title,
+        //   descriptionHtml: req.body.descriptionHtml,
+        //   images: req.body.images,
+        //   options: req.body.options,
+        //   variants: req.body.variants
+        // };
+        // importedProducts.push(product_details);
     
-        user = await UserModel.updateOne({_id:req.user._id}, {products: my_products}, function(err, doc) {
-          if (err) return res.json({status : 'failed'});
-          return res.json({status : 'success'});
-        });
+        // user = await UserModel.updateOne({_id:req.user._id}, {products: my_products}, function(err, doc) {
+        //   if (err) return res.json({status : 'failed'});
+        //   return res.json({status : 'success'});
+        // });
       }
       else{
-        console.log(error);
+        console.log("ali err => ", error);
       } 
-    })*/
-    var product_details = {
-      title: "Product Title",
-      descriptionHtml: "Description HTML",
-      images: [{ src: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg" },
-        { "src": "https://images-na.ssl-images-amazon.com/images/I/61gZIYJ9xlL._SY606_.jpg" }],
-      options: ["Size", "Color"],
-      variants:  [
-        {
-          imageSrc: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg",
-          price: "25",
-          options : ["42", "blue"]
-        },
-        {
-          imageSrc: "https://images-na.ssl-images-amazon.com/images/I/61gZIYJ9xlL._SY606_.jpg",
-          price: "25", 
-          options : ["42", "red"]
-        }]
-    };
-    res.json({status: "success", data: product_details});
+    })
+    
   },
   importProduct: async function  (req, res) {
     var product_details = {

@@ -165,6 +165,10 @@ app.get("/shopify/callback", (req, res) => {
   }
 });
 
+app.get("ali/callback", (req, res) => {
+  console.log(req);
+})
+
 //Handle errors
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
