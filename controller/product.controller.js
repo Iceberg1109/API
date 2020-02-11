@@ -220,13 +220,8 @@ module.exports = {
     }
   },
   startPayment: async function  (req, res) {
-    var product_details = {
-      id: req.id,
-      price: req.body.descriptionHtml,
-      images: req.body.images,
-      options: req.body.options,
-      variants: req.body.variants
-    };
+    var  name = req.body.title;
+    var price = req.body.price;
     
     var payment = {
       "intent": "authorize",
@@ -240,15 +235,15 @@ module.exports = {
       "transactions": [{
         "item_list": {
             "items": [{
-                "name": "media dvd",
+                "name": name,
                 "sku": "001",
-                "price": "39.00",
+                "price": price,
                 "currency": "USD",
                 "quantity": 1
             }]
         },
         "amount": {
-          "total": 39.00,
+          "total": price,
           "currency": "USD"
         },
         "description": " a book on mean stack "
