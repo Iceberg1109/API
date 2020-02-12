@@ -243,7 +243,7 @@ module.exports = {
             }]
         },
         "amount": {
-          "total": price,
+          "total": parseInt(price),
           "currency": "USD"
         },
         "description": " a book on mean stack "
