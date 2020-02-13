@@ -252,19 +252,22 @@ module.exports = {
 
     createPay( payment ) 
     .then( ( transaction ) => {
-        var id = transaction.id; 
-        var links = transaction.links;
-        var counter = links.length; 
-        console.log("transaction:", transaction);
-        while( counter -- ) {
-            if ( links[counter].method == 'REDIRECT') {
-                return res.redirect( links[counter].href )
-            }
+      var id = transaction.id; 
+      var links = transaction.links;
+      var counter = links.length; 
+      console.log("transaction:", transaction);
+      while( counter -- ) {
+        if ( links[counter].method == 'REDIRECT') {
+          return res.json({status: "success", link: links[counter].href});
         }
+        else {
+          return res.json({status: "failed"});
+        }
+      }
     })
     .catch( ( err ) => { 
-        console.log( err ); 
-        res.redirect('/err');
+      console.log( err ); 
+      return res.json({status: "failed"});
     });
   },
   executePayment: async function  (req, res) {
