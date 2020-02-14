@@ -272,7 +272,7 @@ module.exports = {
   },
   executePayment: async function  (req, res) {
     console.log(req.query); 
-//    res.redirect('/success.html'); 
+
     const payerId = req.query.PayerID;
     const paymentId = req.query.paymentId;
     
