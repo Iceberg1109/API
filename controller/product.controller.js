@@ -277,37 +277,37 @@ module.exports = {
     const paymentId = req.query.paymentId;
     
     const execute_payment_json = {
-        "payer_id" : payerId, 
-        "transactions" : [{
-            "amount" : {
-                "currency": "USD",
-                "total": "39.00"
-            }
-        }]
+      "payer_id" : payerId, 
+      "transactions" : [{
+        "amount" : {
+          "currency": "USD",
+          "total": "39.00"
+        }
+      }]
     };
 
     paypal.payment.execute(paymentId, execute_payment_json, (error, payment) => {
-        if(error) {
-            console.log(error.response);
-            throw error;
-        } else {
-            console.log("Get Payment Response");
-            console.log(JSON.stringify(payment));
-            res.redirect('/success.html'); 
-        }
+      if(error) {
+        console.log(error.response);
+        throw error;
+      } else {
+        console.log("Get Payment Response");
+        console.log(JSON.stringify(payment));
+        res.redirect('/success.html'); 
+      }
     });
   }
 }
 
 var createPay = ( payment ) => {
   return new Promise( ( resolve , reject ) => {
-      paypal.payment.create( payment , function( err , payment ) {
-       if ( err ) {
-           reject(err); 
-       }
-      else {
-          resolve(payment); 
-      }
-      }); 
+    paypal.payment.create( payment , function( err , payment ) {
+    if ( err ) {
+      reject(err); 
+    }
+    else {
+      resolve(payment); 
+    }
+    }); 
   });
 }
