@@ -54,6 +54,27 @@ module.exports = {
       });
     });
   },
+  editImportedProduct: async function  (req, res) {
+    var id = req.body.id;
+
+    var product_details = {
+      title: req.body.title,
+      descriptionHtml: req.body.descriptionHtml,
+      images: req.body.images,
+      options: req.body.options,
+      variants: req.body.variants
+    };
+    
+    var user = await UserModel.findById(req.user._id);
+
+    var importedProducts = user.importedProducts;
+    importedProducts[id] = product_details;
+
+    user = await UserModel.updateOne({_id:req.user._id}, {importedProducts: importedProducts}, function(err, doc) {
+      if (err) return res.json({status : 'failed'});
+      return res.json({status : 'success'});
+    });
+  },
   setPriceRule: async function(req, res) {
     var new_rule = req.body.rule;
     var user = await UserModel.updateOne({_id:req.user._id}, {priceRule: new_rule}, function(err, doc) {
