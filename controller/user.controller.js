@@ -95,7 +95,8 @@ module.exports = {
     var user = await UserModel.findById(req.user._id);
 
     var importedProducts = user.importedProducts;
-    importedProducts[id] = product_details;
+    var imported_id = importedProducts.findIndex(x => x.id === id);
+    importedProducts[imported_id] = product_details;
 
     user = await UserModel.updateOne({_id:req.user._id}, {importedProducts: importedProducts}, function(err, doc) {
       if (err) {

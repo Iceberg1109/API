@@ -146,7 +146,7 @@ module.exports = {
     })*/
     /* Dummny Data */
     var product_details = {
-      id: "ali_" + product_id,
+      id: "ali-" + product_id,
       title: "Product Title",
       descriptionHtml: "Description HTML",
       images: [{ src: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg" },
@@ -156,28 +156,58 @@ module.exports = {
         {
           imageSrc: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg",
           price: "25",
-          options : ["42", "blue"]
+          options : ["42", "blue"],
+          inventoryQuantity: 6
         },
         {
           imageSrc: "https://images-na.ssl-images-amazon.com/images/I/61gZIYJ9xlL._SY606_.jpg",
           price: "25", 
-          options : ["42", "red"]
+          options : ["42", "red"],
+          inventoryQuantity: 5
         }]
     };
-    return res.json({status: "success", data: product_details});
+    // Add the product to imported list
+    var user = await UserModel.findById(req.user._id);
+    var importedProducts = user.importedProducts;
+    importedProducts.push(product_details);
+
+    user = await UserModel.updateOne({_id:req.user._id}, {importedProducts: importedProducts}, function(err, doc) {
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Error while find on database"
+          }
+        });
+      }
+      return res.json({status: "success", data: product_details});
+    });
   },
   importProduct: async function  (req, res) {
-    var product_details = {
-      id: req.body.id,
-      title: req.body.title,
-      descriptionHtml: req.body.descriptionHtml,
-      images: req.body.images,
-      options: req.body.options,
-      variants: req.body.variants
-    };
+    var product_id = req.body.id;
+    var product = await ProductModel.findById(product_id);
     
-    var user = await UserModel.findById(req.user._id);
+    if (product == null) {
+      return res.json({
+        status: "failure",
+        error: {
+          message: "Product not found"
+        }
+      });
+    }
+    product._id = undefined;
+    var product_details = {
+      id: "self-" + product_id,
+      title: product.title,
+      descriptionHtml:product.descriptionHtml,
+      images: product.images,
+      options: product.options,
+      variants: product.variants
+    };
+    product.id = "self_" + product_id;
+    console.log("product details => ", product_details);
 
+    var user = await UserModel.findById(req.user._id);
     var importedProducts = user.importedProducts;
     importedProducts.push(product_details);
 
@@ -195,14 +225,18 @@ module.exports = {
   },
   addProduct2Store: async function  (req, res) {
     var product_details = {
-      id: req.body.id,
+      id: `gid://shopify/Product/${req.body.id}`,
       title: req.body.title,
       descriptionHtml: req.body.descriptionHtml,
       images: req.body.images,
       options: req.body.options,
       variants: req.body.variants
     };
-    
+    for (var idx = 0; idx < product_details.variants.length; idx ++ ) {
+      product_details.variants[idx].inventoryManagement = 'SHOPIFY';
+      product_details.variants[idx].sku = req.body.id + "-" + product_details.variants[idx].options.join('-');
+    }
+
     console.log("Add product", product_details);
 
     const NEW_PRODCUT = JSON.stringify({
@@ -222,7 +256,7 @@ module.exports = {
 
     var user = await UserModel.findById(req.user._id);
 
-    var api_url = "https://" + user.storeName + "/admin/api/2020-01/graphql.json";
+    var api_url = "https://" + user.storeName + "/admin/api/2019-07/graphql.json";
     try {
       const response = await Fetch_GraphQL(api_url, NEW_PRODCUT, user.storeAccessToken);
       console.log("after adding product => ", response);
