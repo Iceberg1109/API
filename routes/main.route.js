@@ -44,6 +44,9 @@ router.post('/user/set-sale-rule', (req, res, next) => {
 router.post('/product/listAll', (req, res, next) => {
   ProductController.getSelfProducts(req, res);
 });
+router.post('/product/category', (req, res, next) => {
+  ProductController.getByCategory(req, res);
+});
 router.post('/product/listSale', (req, res, next) => {
   ProductController.getSaleProducts(req, res);
 });

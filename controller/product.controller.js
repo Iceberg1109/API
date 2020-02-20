@@ -38,22 +38,17 @@ module.exports = {
           }
         });
       }
-      var productMap = [];
-      
-      products.forEach(function(product) {
-        productMap.push(product);
-      });
-      
+     
       return res.json({
         status: "success",
         data: {
-          products: productMap
+          products: products
         }
       });  
     });
   },
-  getSaleProducts: function (req, res) {
-    ProductModel.find({onSale: true, category: req.body.category}, function(err, products) {
+  getByCategory: function (req, res) {
+    ProductModel.find({category: req.body.category}, function(err, products) {
       if (err) {
         return res.json({
           status: "failure",
@@ -62,18 +57,30 @@ module.exports = {
           }
         });
       }
-      var productMap = [];
-      
-      var idx = 0;
-      products.forEach(function(product) {
-        productMap.push(product);
-        idx ++;
-      });
   
       return res.json({
         status: "success",
         data: {
-          products: productMap
+          products: products
+        }
+      }); 
+    });
+  },
+  getSaleProducts: function (req, res) {
+    ProductModel.find({onSale: true}, function(err, products) {
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Error while find on database"
+          }
+        });
+      }
+     
+      return res.json({
+        status: "success",
+        data: {
+          products: products
         }
       }); 
     });
@@ -88,18 +95,11 @@ module.exports = {
           }
         });
       }
-      var productMap = [];
-      
-      var idx = 0;
-      products.forEach(function(product) {
-        productMap.push(product);
-        idx ++;
-      });
   
       return res.json({
         status: "success",
         data: {
-          products: productMap
+          products: products
         }
       });
     });
@@ -146,6 +146,7 @@ module.exports = {
     })*/
     /* Dummny Data */
     var product_details = {
+      id: "ali_" + product_id,
       title: "Product Title",
       descriptionHtml: "Description HTML",
       images: [{ src: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg" },
@@ -167,6 +168,7 @@ module.exports = {
   },
   importProduct: async function  (req, res) {
     var product_details = {
+      id: req.body.id,
       title: req.body.title,
       descriptionHtml: req.body.descriptionHtml,
       images: req.body.images,
@@ -193,6 +195,7 @@ module.exports = {
   },
   addProduct2Store: async function  (req, res) {
     var product_details = {
+      id: req.body.id,
       title: req.body.title,
       descriptionHtml: req.body.descriptionHtml,
       images: req.body.images,
