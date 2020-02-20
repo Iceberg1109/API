@@ -34,14 +34,46 @@ module.exports = {
       var storeName = req.body.order_status_url.split('/')[2];
       var type = req.body.line_items[0].sku.split('-')[0];
       var id = req.body.line_items[0].sku.split('-')[1];
-    
+      var isShipped = undefined;
+      if (type === 'self') isShipped = false;
+
       await OrderModel.create({
         storeName: storeName, 
         type: type,
         quantity: req.body.line_items[0].quantity,
-        id: id
+        id: id,
+        isShipped: isShipped
       });
-      // var user = await UserModel.find({storeName: store});
     }
+  },
+  markAsShipped: async function(req, res) {
+    var order_ids = req.body.ids;
+    var order = await OrderModel.findById(order_id);
+    
+    if (order == null) {
+      return res.json({
+        status: "failure",
+        error: {
+          message: "Order not found"
+        }
+      });
+    }
+    
+    order.isShipped = true;
+    var isSuccess = true;
+    for (var i = 0; i < order_ids.length; i ++) {
+      await OrderModel.updateOne({_id:order_ids[i]}, {isShipped: true}, function(err, doc) {
+        if (err) isSuccess = false;
+      });
+    }
+    if (!isSuccess) {
+      return res.json({
+        status: "failure",
+        error: {
+          message: "Some orders are not updated"
+        }
+      });
+    }
+    return res.json({status : 'success'});
   }
 }

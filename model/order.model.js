@@ -17,6 +17,9 @@ const OrderSchema = new Schema({
   storeName: {
     type : String,
     required : true,
+  },
+  isShipped: {
+    type: Boolean,
   }
 });
 
