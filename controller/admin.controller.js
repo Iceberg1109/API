@@ -3,7 +3,14 @@ const ProductModel = require('../model/product.model');
 module.exports = {
   getUsersList: function (req, res) {
     UserModel.find({isAdmin: false}, 'name email', function(err, users) {
-      if (err) res.json({status: "fail"});  
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Error while finding on database"
+          }
+        });
+      }
       var userMap = [];
       
       var idx = 0;
@@ -12,7 +19,13 @@ module.exports = {
         idx ++;
       });
   
-      res.json({status: "success",count: idx, users: userMap});  
+      return res.json({
+        status: "success", 
+        data: {
+          count: idx,
+          users: userMap
+        }
+      });  
     });
   },
   addProduct: async function (req, res) {

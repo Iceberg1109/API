@@ -31,25 +31,36 @@ module.exports = {
   getSelfProducts: function (req, res) {
     ProductModel.find({}, function(err, products) {
       if (err) {
-        console.log(err);
-        return res.json({status: "fail"});
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Error while find on database"
+          }
+        });
       }
       var productMap = [];
       
-      var idx = 0;
       products.forEach(function(product) {
         productMap.push(product);
-        idx ++;
       });
-  
-      res.json({status: "success",count: idx, products: productMap});  
+      
+      return res.json({
+        status: "success",
+        data: {
+          products: productMap
+        }
+      });  
     });
   },
   getSaleProducts: function (req, res) {
     ProductModel.find({onSale: true, category: req.body.category}, function(err, products) {
       if (err) {
-        console.log(err);
-        return res.json({status: "fail"});
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Error while find on database"
+          }
+        });
       }
       var productMap = [];
       
@@ -59,14 +70,23 @@ module.exports = {
         idx ++;
       });
   
-      res.json({status: "success",count: idx, products: productMap});  
+      return res.json({
+        status: "success",
+        data: {
+          products: productMap
+        }
+      }); 
     });
   },
   getTopSellingProducts: function (req, res) {
     ProductModel.find({}).sort('-soldCount').limit(req.body.count).exec(function(err, products){
       if (err) {
-        console.log(err);
-        return res.json({status: "fail"});
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Error while find on database"
+          }
+        });
       }
       var productMap = [];
       
@@ -76,7 +96,12 @@ module.exports = {
         idx ++;
       });
   
-      res.json({status: "success",count: idx, products: productMap});  
+      return res.json({
+        status: "success",
+        data: {
+          products: productMap
+        }
+      });
     });
   },
   getAliProductInfo: async function (req, res) {
@@ -138,7 +163,7 @@ module.exports = {
           options : ["42", "red"]
         }]
     };
-    res.json({status: "success", data: product_details});
+    return res.json({status: "success", data: product_details});
   },
   importProduct: async function  (req, res) {
     var product_details = {
@@ -155,7 +180,14 @@ module.exports = {
     importedProducts.push(product_details);
 
     user = await UserModel.updateOne({_id:req.user._id}, {importedProducts: importedProducts}, function(err, doc) {
-      if (err) return res.json({status : 'failed'});
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Error while find on database"
+          }
+        });
+      }
       return res.json({status : 'success'});
     });
   },
@@ -196,20 +228,37 @@ module.exports = {
       //var user = await UserModel.findById(req.user._id);
       console.log(response.data.productCreate.userErrors.length);
       if (response.errors || response.data.productCreate.userErrors.length > 0) {
-        return res.json({status : 'failed'});
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Error while find on database"
+          }
+        });
       }
 
       var my_products = user.myProducts;
       my_products.push(product_details);
 
       user = await UserModel.updateOne({_id:req.user._id}, {myProducts: my_products}, function(err, doc) {
-        if (err) return res.json({status : 'failed'});
+        if (err) {
+          return res.json({
+            status: "failure",
+            error: {
+              message: "Error while find on database"
+            }
+          });
+        }
         return res.json({status : 'success'});
       });
     }
     catch(err) {
       console.log("adding product err => ", err);
-      res.json({status : 'failed'});
+      return res.json({
+        status: "failure",
+        error: {
+          message: "Error while find on database"
+        }
+      });
     }
   },
   startPayment: async function  (req, res) {
@@ -251,16 +300,31 @@ module.exports = {
       console.log("transaction:", transaction);
       while( counter -- ) {
         if ( links[counter].method == 'REDIRECT') {
-          return res.json({status: "success", link: links[counter].href});
+          return res.json({
+            status: "success", 
+            data: {
+              link: links[counter].href
+            }
+          });
         }
         else {
-          return res.json({status: "failed"});
+          return res.json({
+            status: "failure",
+            error: {
+              message: "Error while creating login"
+            }
+          });
         }
       }
     })
     .catch( ( err ) => { 
       console.log( err ); 
-      return res.json({status: "failed"});
+      return res.json({
+        status: "failure",
+        error: {
+          message: "Something went wrong"
+        }
+      });
     });
   },
   executePayment: async function  (req, res) {

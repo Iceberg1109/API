@@ -21,36 +21,63 @@ Fetch_GraphQL = async (url, fields, storeAccessToken) => {
 module.exports = {
   getUserInfo: function (req, res, next) {
     UserModel.findById(req.user._id, function (err, user) {
-      if (err) return res.json({status: "no user"});
-      console.log("get", user);
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: "User not found"
+          }
+        });
+      }
+
       return res.json({
         status :        "success",
-        name :          user.name,
-        email :         user.email,
-        store :         user.storeName,
-        isAdmin :       user.isAdmin,
-        priceRule :     user.priceRule,
-        salePriceRule : user.salePriceRule
+        data: {
+          name :          user.name,
+          email :         user.email,
+          store :         user.storeName,
+          isAdmin :       user.isAdmin,
+          priceRule :     user.priceRule,
+          salePriceRule : user.salePriceRule
+        }
       });
     });
   },
   getMyProducts: function (req, res, next) {
     UserModel.findById(req.user._id, function (err, user) {
-      if (err) return res.json({status: "no user"});
+      if (err)if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: "User not found"
+          }
+        });
+      }
       
       return res.json({
         status: "success",
-        products: user.myProducts
+        data: {
+          products: user.myProducts
+        }
       });
     });
   },
   getImportedProducts: function (req, res, next) {
     UserModel.findById(req.user._id, function (err, user) {
-      if (err) return res.json({status: "no user"});
+      if (err)if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: "User not found"
+          }
+        });
+      }
       
       return res.json({
         status: "success",
-        products: user.importedProducts
+        data: {
+          products: user.importedProducts
+        }
       });
     });
   },
@@ -71,21 +98,42 @@ module.exports = {
     importedProducts[id] = product_details;
 
     user = await UserModel.updateOne({_id:req.user._id}, {importedProducts: importedProducts}, function(err, doc) {
-      if (err) return res.json({status : 'failed'});
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: json_encode(err)
+          }
+        });
+      }
       return res.json({status : 'success'});
     });
   },
   setPriceRule: async function(req, res) {
     var new_rule = req.body.rule;
     var user = await UserModel.updateOne({_id:req.user._id}, {priceRule: new_rule}, function(err, doc) {
-      if (err) return res.json({status : 'failed'});
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Could not update the database"
+          }
+        });
+      }
       return res.json({status : 'success'});
     });
   },
   setSalePriceRule: async function(req, res) {
     var new_rule = req.body.rule;
     var user = await UserModel.updateOne({_id:req.user._id}, {salePriceRule: new_rule}, function(err, doc) {
-      if (err) return res.json({status : 'failed'});
+      if (err){
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Could not update the database"
+          }
+        });
+      }
       return res.json({status : 'success'});
     });
   },
@@ -94,18 +142,36 @@ module.exports = {
     var new_pwd = req.body.new_pwd;
     
     var user = await UserModel.findById(req.user._id);
-    if( !user ) return res.json({status : 'failed'});
+    if( !user ){
+      return res.json({
+        status: "failure",
+        error: {
+          message: "User not found"
+        }
+      });
+    }
 
     const validate = await user.isValidPassword(old_pwd);
     if( !validate ){
-      console.log("wrong pwd");
-      return res.json({status : 'wrong pwd'});
+      return res.json({
+        status: "failure",
+        error: {
+          message: "Wrong Password"
+        }
+      });
     }
 
     const hash = await bcrypt.hash(new_pwd, 10);
     
     var user = await UserModel.updateOne({_id:req.user._id}, {password: hash}, function(err, doc) {
-      if (err) return res.json({status : 'failed'});
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Could not update the database"
+          }
+        });
+      }
       return res.json({status : 'success'});
     });
   },
@@ -131,9 +197,14 @@ module.exports = {
     var api_url = "https://" + user.storeName + "/admin/api/2020-01/graphql.json";
     const response = await Fetch_GraphQL(api_url, NEW_WEBHOOK, user.storeAccessToken);
     if (response.errors || response.data.webhookSubscriptionCreate.userErrors.length > 0) {
-      return res.json({status : 'failed'});
+      return res.json({
+        status: "failure",
+        error: {
+          message: "Could not add the webhook"
+        }
+      });
     }
-    console.log("hook response => ", response.data.webhookSubscriptionCreate.webhookSubscription.id);
+
     res.json({status : 'success'});
   },
 }
