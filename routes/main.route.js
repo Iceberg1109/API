@@ -3,6 +3,7 @@ const router = express.Router();
 
 const ProductController = require('../controller/product.controller');
 const UserController = require('../controller/user.controller');
+const OrderController = require('../controller/order.controller');
 
 // All routes here are secure, they all require authorization
 
@@ -47,6 +48,9 @@ router.post('/product/listAll', (req, res, next) => {
 router.post('/product/category', (req, res, next) => {
   ProductController.getByCategory(req, res);
 });
+router.post('/product/detail', (req, res, next) => {
+  ProductController.getById(req, res);
+});
 router.post('/product/listSale', (req, res, next) => {
   ProductController.getSaleProducts(req, res);
 });
@@ -67,6 +71,10 @@ router.post('/product/buy', (req, res, next) => { // start buying process
 });
 router.post('/product/buy-success', (req, res) => { // execute payment
   ProductController.executePayment(req, res);
+});
+// Order related
+router.post('/order/listAll', (req, res) => { // execute payment
+  OrderController.getOrders(req, res);
 });
 
 module.exports = router;

@@ -6,7 +6,11 @@ const OrderSchema = new Schema({
     type : String,
     required : true,
   },
-  id : {
+  product_id : {
+    type : String,
+    required : true,
+  },
+  sku : {
     type : String,
     required : true,
   },

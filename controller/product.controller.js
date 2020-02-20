@@ -66,6 +66,21 @@ module.exports = {
       }); 
     });
   },
+  getById: async function (req, res) {
+    var product = await ProductModel.findById(req.body.id);
+    if (product == null) {
+      return res.json({
+        status: "failure",
+        error: {
+          message: "Error while find on database"
+        }
+      });
+    }
+    return res.json({
+      status: "success",
+      data: product
+    });
+  },
   getSaleProducts: function (req, res) {
     ProductModel.find({onSale: true}, function(err, products) {
       if (err) {
@@ -274,6 +289,7 @@ module.exports = {
       }
 
       var my_products = user.myProducts;
+      product_details.id = req.body.id;
       my_products.push(product_details);
 
       user = await UserModel.updateOne({_id:req.user._id}, {myProducts: my_products}, function(err, doc) {

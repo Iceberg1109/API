@@ -41,10 +41,40 @@ module.exports = {
         storeName: storeName, 
         type: type,
         quantity: req.body.line_items[0].quantity,
-        id: id,
+        product_id: id,
+        sku: req.body.line_items[0].sku,
         isShipped: isShipped
       });
     }
+  },
+  getOrders: async function (req, res) {
+    var user = await UserModel.findById(req.user._id);
+    if (user == null ) {
+      return res.json({
+        status: "failure",
+        error: {
+          message: "Not authorized"
+        }
+      });
+    }
+
+    OrderModel.find({storeName: user.storeName}, function(err, orders) {
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: "Error while find on database"
+          }
+        });
+      }
+  
+      return res.json({
+        status: "success",
+        data: {
+          orders: orders
+        }
+      }); 
+    });
   },
   markAsShipped: async function(req, res) {
     var order_ids = req.body.ids;
