@@ -23,4 +23,8 @@ router.post('/reset-pwd/', (req, res) => {
 router.post('/shopify/', (req, res) => {
   AuthController.shopifyAuth(req, res);
 });
+
+router.get('/product/buy-success', (req, res) => { // execute payment
+  ProductController.executePayment(req, res);
+});
 module.exports = router;

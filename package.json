@@ -29,6 +29,7 @@
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
+    "paypal-rest-sdk": "^1.8.1",
     "query-string": "^6.9.0",
     "querystring": "^0.2.0",
     "request": "^2.88.0",

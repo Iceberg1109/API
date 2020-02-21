@@ -69,9 +69,7 @@ router.post('/product/add2store', (req, res, next) => { // add new product to th
 router.post('/product/buy', (req, res, next) => { // start buying process
   ProductController.startPayment(req, res);
 });
-router.post('/product/buy-success', (req, res) => { // execute payment
-  ProductController.executePayment(req, res);
-});
+
 // Order related
 router.post('/order/listAll', (req, res) => { // execute payment
   OrderController.getOrders(req, res);

@@ -70,9 +70,7 @@ module.exports = {
       if (orders[i].isShipped) isShipped = "Delivered";
 
       var user = await UserModel.findOne({storeName: orders[i].storeName});
-      if (user == null)
-        continue;
-      console.log(user);
+      
       var myProducts = user.myProducts;
       var product = myProducts.find(x => x.id === orders[i].product_id);
       var variant = product.variants.find(x => x.sku === orders[i].sku);
