@@ -82,9 +82,8 @@ module.exports = {
     });
   },
   editImportedProduct: async function  (req, res) {
-    var id = req.body.id;
-
     var product_details = {
+      id:  req.body.id,
       title: req.body.title,
       descriptionHtml: req.body.descriptionHtml,
       images: req.body.images,
@@ -95,7 +94,7 @@ module.exports = {
     var user = await UserModel.findById(req.user._id);
 
     var importedProducts = user.importedProducts;
-    var imported_id = importedProducts.findIndex(x => x.id === id);
+    var imported_id = importedProducts.findIndex(x => x.id === product_details.id);
     importedProducts[imported_id] = product_details;
 
     user = await UserModel.updateOne({_id:req.user._id}, {importedProducts: importedProducts}, function(err, doc) {

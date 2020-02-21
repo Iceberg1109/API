@@ -239,17 +239,19 @@ module.exports = {
     });
   },
   addProduct2Store: async function  (req, res) {
-    var product_details = {
-      id: `gid://shopify/Product/${req.body.id}`,
-      title: req.body.title,
-      descriptionHtml: req.body.descriptionHtml,
-      images: req.body.images,
-      options: req.body.options,
-      variants: req.body.variants
-    };
+    var import_id = req.body.id;
+    var user = await UserModel.findById(req.user._id);
+    var product_details = user.importedProducts.find(x => x.id == import_id);
+    console.log(product_details);
+    product_details.id = `gid://shopify/Product/${product_details.id}`;
+   
     for (var idx = 0; idx < product_details.variants.length; idx ++ ) {
       product_details.variants[idx].inventoryManagement = 'SHOPIFY';
       product_details.variants[idx].sku = req.body.id + "-" + product_details.variants[idx].options.join('-');
+      if (product_details.variants[idx].salePrice) {
+        product_details.variants[idx].price = product_details.variants[idx].salePrice;
+        product_details.variants[idx].salePrice = undefined;
+      }
     }
 
     console.log("Add product", product_details);
