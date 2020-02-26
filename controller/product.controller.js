@@ -3,11 +3,15 @@ const fetch = require("node-fetch");
 
 // var TopClient = require('node-taobao-topclient').default;
 var TopClient = require('topsdk');
-// var webdriver = require ('selenium-webdriver');
-let webdriver = require('selenium-webdriver');
-var By = webdriver.By;
-let chrome = require('selenium-webdriver/chrome');
-let chromedriver = require('chromedriver');
+
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth')
+puppeteer.use(StealthPlugin())
+
+// let webdriver = require('selenium-webdriver');
+// var By = webdriver.By;
+// let chrome = require('selenium-webdriver/chrome');
+// let chromedriver = require('chromedriver');
 
 const ProductModel = require('../model/product.model');
 const UserModel = require('../model/user.model');
@@ -122,66 +126,106 @@ module.exports = {
   },
   getAliProductInfo: async function (req, res) {
     product_id = req.body.product_id;
+    const browser = await puppeteer.launch({ 
+      args: ["--no-sandbox", "--disable-setuid-sandbox"], 
+      headless: false ,
+      timeout: 0});
+    //headless true or false
 
-    //https://oauth.taobao.com/authorize?response_type=token&client_id=12345678&state=1212&view=web&redirect_uri=Callback URL
-   
-    /*var client = new TopClient(process.env.Ali_APPKEY, process.env.Ali_APPSECRET, {
-      endpoint: 'http://gw.api.taobao.com/router/rest',
-      useValidators: false,
-      rawResponse: false
-    });
+    // new page
+    const page = await browser.newPage();
+    await page.setDefaultNavigationTimeout(0); 
+    await page.goto("https://www.aliexpress.com/item/" + product_id + ".html");
+    await page.waitFor(1000);
+    try {
+      await page.$eval('.next-dialog-close', elem => elem.click());
+    }
+    catch(err) {}
+    // await page.waitForNavigation();
+    // await page.waitForSelector('.images-view-item');
+    // Product Title
+    const [elementHandle] = await page.$x('.//div[@class="product-title"]');
+    const propertyHandle = await elementHandle.getProperty('innerText');
+    const product_title = await propertyHandle.jsonValue();
+
+    // Product Images
+    const img_elements = await page.$x('.//div[@class="images-view-item"]/img');
+    const product_images = await page.evaluate((...elements) => {
+      return elements.map(e => { 
+        return {src: e.src};
+      });
+    }, ...img_elements);
+
+    // Product Options
+    const skus = await page.$$("div.sku-property");
+    var product_options = [];
+    var product_options_list = [];
+    for( let sku of skus ) {
+        const attr = await page.evaluate(async e => {
+          var title = e.querySelector(".sku-title").innerText;
+          title = title.split(':')[0];
+          const text_elements = e.querySelectorAll(".sku-property-item");
+          var list = [];
+          for (let element of text_elements) {
+            list.push(element.innerText);
+          }
+          
+          return {title, list};
+        }, sku);
+        
+        product_options.push(attr.title);
+        product_options_list.push(attr.list);
+    }
     
-    await client.execute('aliexpress.postproduct.redefining.findaeproductbyidfordropshipper', {
-      product_id: product_id,
-      nick: "cn1530062784shpl",
-      session: "500022016051AUgiq17749c1d9Rplafav3trzEIEwjzIv0FcW8oPiPOWtoc6LiX47Yi"
-      // 'local_country':'RU',
-      // 'local_language':'ru'
-    }, async function (error, response) {
-      if (!error) {
-        console.log("ali => ", response);
-        // var user = await UserModel.findById(req.user._id);
-        // var importedProducts = user.importedProducts;
-        // var product_details = {
-        //   title: req.body.title,
-        //   descriptionHtml: req.body.descriptionHtml,
-        //   images: req.body.images,
-        //   options: req.body.options,
-        //   variants: req.body.variants
-        // };
-        // importedProducts.push(product_details);
-    
-        // user = await UserModel.updateOne({_id:req.user._id}, {products: my_products}, function(err, doc) {
-        //   if (err) return res.json({status : 'failed'});
-        //   return res.json({status : 'success'});
-        // });
+    func(product_options_list, 0 ,0);
+
+    var variants = [];
+    for (var i = 0; i < path.length; i ++) {
+      var options = [];
+      
+      // Click the each variant
+      for (var j = 0; j < path[i].length; j ++) {
+        await page.$eval('.sku-property:nth-child(' + (j + 1).toString() + ') .sku-property-list li:nth-child(' + path[i][j] +')', elem => elem.click());
+        await page.waitFor(100);
       }
-      else{
-        console.log("ali err => ", error);
-      } 
-    })*/
+
+      // Get variant details
+      for (var j = 0; j < path[i].length; j ++) { // Variant Options
+        try {
+          const [elementHandle] = await page.$x('(//span[@class="sku-title-value"])[' + (j + 1).toString() + ']');
+          const propertyHandle = await elementHandle.getProperty('innerText');
+          const sku_value = await propertyHandle.jsonValue();
+          options.push(sku_value);
+        } catch(err) { }
+      }
+      
+      if (options.indexOf("") === -1) { // New Variant
+        var regex = /[+-]?\d+(\.\d+)?/g;
+
+        const variant_price = await page.$eval('.product-price-value', el => el.textContent);
+        var price = parseFloat(variant_price.match(regex)[0]);
+
+        const quantity = await page.$eval('.product-quantity-tip span', el => el.textContent);
+        var inventoryQuantity = parseInt(quantity.match(regex)[0]);
+        
+        variants.push({options, price, inventoryQuantity});
+      }
+      // Deselect all skus
+      await page.$$eval('.sku-property-item.selected', elements => elements.map(e => e.click()));
+      await page.waitFor(500);
+    }
+    await browser.close();
     /* Dummny Data */
     var product_details = {
       id: "ali-" + product_id,
-      title: "Product Title",
+      title: product_title,
       descriptionHtml: "Description HTML",
-      images: [{ src: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg" },
-        { "src": "https://images-na.ssl-images-amazon.com/images/I/61gZIYJ9xlL._SY606_.jpg" }],
-      options: ["Size", "Color"],
-      variants:  [
-        {
-          imageSrc: "https://images-na.ssl-images-amazon.com/images/I/719PHq579pL._SL1500_.jpg",
-          price: "25",
-          options : ["42", "blue"],
-          inventoryQuantity: 6
-        },
-        {
-          imageSrc: "https://images-na.ssl-images-amazon.com/images/I/61gZIYJ9xlL._SY606_.jpg",
-          price: "25", 
-          options : ["42", "red"],
-          inventoryQuantity: 5
-        }]
+      images: product_images,
+      options: product_options,
+      variants:  variants
     };
+    console.log(product_details);
+    
     // Add the product to imported list
     var user = await UserModel.findById(req.user._id);
     var importedProducts = user.importedProducts;
@@ -409,6 +453,21 @@ module.exports = {
         res.redirect('/success.html'); 
       }
     });
+  }
+}
+var path = [];
+var single = [];
+
+function func(options, step)
+{
+	if( step >= options.length ) {
+    path.push([...single]);
+  } 
+  else {
+    for(var i = 0; i < options[step].length; i ++) {
+      single[step] = i + 1;
+      func(options, step + 1);
+    }
   }
 }
 
