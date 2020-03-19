@@ -131,8 +131,9 @@ module.exports = {
     product_title = item.title.split("| |  - AliExpress")[0];
     // Product Images
     product_images = [];
-    for (var i = 0; i < item.item_imgs.length; i ++) {
-      product_images.push({src: item.item_imgs[i].url});
+    var imgs = item.item_imgs.item_img ? item.item_imgs.item_img : item.item_imgs;
+    for (var i = 0; i < imgs.length; i ++) {
+      product_images.push({src: imgs[i].url});
     }
     // Product variant options
     var options = new Set();
