@@ -4,15 +4,6 @@ const fetch = require("node-fetch");
 // var TopClient = require('node-taobao-topclient').default;
 var TopClient = require('topsdk');
 
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth')
-puppeteer.use(StealthPlugin())
-
-// let webdriver = require('selenium-webdriver');
-// var By = webdriver.By;
-// let chrome = require('selenium-webdriver/chrome');
-// let chromedriver = require('chromedriver');
-
 const ProductModel = require('../model/product.model');
 const UserModel = require('../model/user.model');
 
@@ -125,106 +116,58 @@ module.exports = {
     });
   },
   getAliProductInfo: async function (req, res) {
-    product_id = req.body.product_id;
-    const browser = await puppeteer.launch({ 
-      args: ["--no-sandbox", "--disable-setuid-sandbox"], 
-      headless: false ,
-      timeout: 0});
-    //headless true or false
-
-    // new page
-    const page = await browser.newPage();
-    await page.setDefaultNavigationTimeout(0); 
-    await page.goto("https://www.aliexpress.com/item/" + product_id + ".html");
-    await page.waitFor(1000);
-    try {
-      await page.$eval('.next-dialog-close', elem => elem.click());
-    }
-    catch(err) {}
-    // await page.waitForNavigation();
-    // await page.waitForSelector('.images-view-item');
-    // Product Title
-    const [elementHandle] = await page.$x('.//div[@class="product-title"]');
-    const propertyHandle = await elementHandle.getProperty('innerText');
-    const product_title = await propertyHandle.jsonValue();
-
-    // Product Images
-    const img_elements = await page.$x('.//div[@class="images-view-item"]/img');
-    const product_images = await page.evaluate((...elements) => {
-      return elements.map(e => { 
-        return {src: e.src};
-      });
-    }, ...img_elements);
-
-    // Product Options
-    const skus = await page.$$("div.sku-property");
-    var product_options = [];
-    var product_options_list = [];
-    for( let sku of skus ) {
-        const attr = await page.evaluate(async e => {
-          var title = e.querySelector(".sku-title").innerText;
-          title = title.split(':')[0];
-          const text_elements = e.querySelectorAll(".sku-property-item");
-          var list = [];
-          for (let element of text_elements) {
-            list.push(element.innerText);
-          }
-          
-          return {title, list};
-        }, sku);
-        
-        product_options.push(attr.title);
-        product_options_list.push(attr.list);
-    }
+    var product_id = req.body.product_id;
+    console.log("here", product_id);
     
-    func(product_options_list, 0 ,0);
-
-    var variants = [];
-    for (var i = 0; i < path.length; i ++) {
-      var options = [];
-      
-      // Click the each variant
-      for (var j = 0; j < path[i].length; j ++) {
-        await page.$eval('.sku-property:nth-child(' + (j + 1).toString() + ') .sku-property-list li:nth-child(' + path[i][j] +')', elem => elem.click());
-        await page.waitFor(100);
+    const response = await fetch(
+      `http://api.onebound.cn/aliexpress/api_call.php?num_iid=${product_id}&api_name=item_get&lang=en&key=tel13823615529&secret=20200310`,
+      {
+        method: "GET",
       }
-
-      // Get variant details
-      for (var j = 0; j < path[i].length; j ++) { // Variant Options
-        try {
-          const [elementHandle] = await page.$x('(//span[@class="sku-title-value"])[' + (j + 1).toString() + ']');
-          const propertyHandle = await elementHandle.getProperty('innerText');
-          const sku_value = await propertyHandle.jsonValue();
-          options.push(sku_value);
-        } catch(err) { }
-      }
-      
-      if (options.indexOf("") === -1) { // New Variant
-        var regex = /[+-]?\d+(\.\d+)?/g;
-
-        const variant_price = await page.$eval('.product-price-value', el => el.textContent);
-        var price = parseFloat(variant_price.match(regex)[0]);
-
-        const quantity = await page.$eval('.product-quantity-tip span', el => el.textContent);
-        var inventoryQuantity = parseInt(quantity.match(regex)[0]);
-        
-        variants.push({options, price, inventoryQuantity});
-      }
-      // Deselect all skus
-      await page.$$eval('.sku-property-item.selected', elements => elements.map(e => e.click()));
-      await page.waitFor(500);
+    );
+    const {item} = await response.json();
+    
+    // Product Title
+    product_title = item.title.split("| |  - AliExpress")[0];
+    // Product Images
+    product_images = [];
+    for (var i = 0; i < item.item_imgs.length; i ++) {
+      product_images.push({src: item.item_imgs[i].url});
     }
-    await browser.close();
+    // Product variant options
+    var options = new Set();
+    for (let [key, value] of Object.entries(item.props_list)) {
+      var option = value.split(":")[0];
+      options.add(option);
+    }
+
+    var product_options = Array.from(options.values());
+    // Product variants
+    var variants = [];
+    for (i = 0; i < item.skus.sku.length; i ++) {
+      var options = [];
+
+      var _options = item.skus.sku[i].properties_name.split(":;");
+      for (j = 0; j < _options.length; j ++) {
+        var temp = _options[j].split("#");
+
+        if (temp.length > 1) options.push(temp[1].split(":")[0]);
+        else options.push(temp[0].split(":").pop());
+      }
+      var price = item.skus.sku[i].price;
+      var inventoryQuantity = item.skus.sku[i].quantity;
+      variants.push({options, price, inventoryQuantity});
+    }
+    console.log(variants);
     /* Dummny Data */
     var product_details = {
       id: "ali-" + product_id,
       title: product_title,
-      descriptionHtml: "Description HTML",
+      descriptionHtml: item.desc,
       images: product_images,
       options: product_options,
       variants:  variants
     };
-    console.log(product_details);
     
     // Add the product to imported list
     var user = await UserModel.findById(req.user._id);
