@@ -42,6 +42,7 @@ module.exports = {
       images: req.body.images,
       options: req.body.options,
       variants: req.body.variants,
+      onSale: req.body.onSale,
       importedCount: 0,
       addedCount: 0,
       soldCount: 0
@@ -49,6 +50,40 @@ module.exports = {
 
     const user = await ProductModel.create(product_details);
     return res.json({status: "success"});
+  },
+  editProduct: async function (req, res) {
+    var product_id = req.body.id;
+    var product_details = {
+      category: req.body.category,
+      title: req.body.title,
+      descriptionHtml: req.body.descriptionHtml,
+      images: req.body.images,
+      options: req.body.options,
+      variants: req.body.variants,
+      onSale: req.body.onSale,
+      importedCount: 0,
+      addedCount: 0,
+      soldCount: 0
+    };
+
+    user = await ProductModel.updateOne({_id:product_id}, product_details, function(err, doc) {
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: json_encode(err)
+          }
+        });
+      }
+      return res.json({status : 'success'});
+    });
+  },
+  removeProduct: async function (req, res) {
+    const response = await ProductModel.deleteOne({ _id: req.body.id });
+    if (response.deletedCount) {
+      return res.json({status: "success"});
+    }
+    return res.json({status: "failure"});
   },
   getOrdersList: async function (req, res) {
     var orders = await OrderModel.find({});

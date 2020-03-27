@@ -109,6 +109,27 @@ module.exports = {
       return res.json({status : 'success'});
     });
   },
+  removeImportedProduct: async function  (req, res) {
+    var product_id =  req.body.id;
+    
+    var user = await UserModel.findById(req.user._id);
+
+    var importedProducts = user.importedProducts;
+    var imported_id = importedProducts.findIndex(x => x.id === product_details.id);
+    importedProducts.splice(imported_id, 1);;
+
+    user = await UserModel.updateOne({_id:req.user._id}, {importedProducts: importedProducts}, function(err, doc) {
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: json_encode(err)
+          }
+        });
+      }
+      return res.json({status : 'success'});
+    });
+  },
   setPriceRule: async function(req, res) {
     var new_rule = req.body.rule;
     var user = await UserModel.updateOne({_id:req.user._id}, {priceRule: new_rule}, function(err, doc) {

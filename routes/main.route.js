@@ -21,6 +21,10 @@ router.post('/user/imported/edit', (req, res, next) => {
   UserController.editImportedProduct(req, res);
 });
 
+router.post('/user/imported/remove', (req, res, next) => {
+  UserController.removeImportedProduct(req, res);
+});
+
 router.post('/user/my-products', (req, res, next) => {
   UserController.getMyProducts(req, res);
 });

@@ -33,6 +33,31 @@ router.post('/product/add', (req, res, next) => { // Add Product to the database
   AdminController.addProduct(req, res);
 });
 
+router.post('/product/edit', (req, res, next) => { // Add Product to the database
+  if (req.user.isAdmin == false) {
+    return res.json({
+      status: "failure",
+      error: {
+        message: "Not allowed"
+      }
+    });
+  }
+
+  AdminController.editProduct(req, res);
+});
+
+router.post('/product/remove', (req, res, next) => { // Add Product to the database
+  if (req.user.isAdmin == false) {
+    return res.json({
+      status: "failure",
+      error: {
+        message: "Not allowed"
+      }
+    });
+  }
+
+  AdminController.removeProduct(req, res);
+});
 // Order related routes
 router.post('/orders/list', (req, res) => { // Add Product to the database
   if (req.user.isAdmin == false) {

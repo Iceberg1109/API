@@ -188,6 +188,8 @@ module.exports = {
     });
   },
   importProduct: async function  (req, res) {
+    var user = await UserModel.findById(req.user._id);
+
     var product_id = req.body.id;
     var product = await ProductModel.findById(product_id);
     
@@ -209,9 +211,12 @@ module.exports = {
       variants: product.variants
     };
     product.id = "self_" + product_id;
+    for (var idx = 0; idx < product_details.variants.length; idx ++ ) {
+      product_details.variants[idx].originalPrice = product_details.variants[idx].price;
+      product_details.variants[idx].price = user.priceRule * product_details.variants[idx].price;
+    }
     console.log("product details => ", product_details);
 
-    var user = await UserModel.findById(req.user._id);
     var importedProducts = user.importedProducts;
     importedProducts.push(product_details);
 
@@ -240,6 +245,9 @@ module.exports = {
       if (product_details.variants[idx].salePrice) {
         product_details.variants[idx].price = product_details.variants[idx].salePrice;
         product_details.variants[idx].salePrice = undefined;
+      }
+      if (product_details.variants[idx].originalPrice) {
+        product_details.variants[idx].originalPrice = undefined;
       }
     }
 
