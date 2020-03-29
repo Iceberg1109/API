@@ -24,6 +24,18 @@ const OrderSchema = new Schema({
   },
   isShipped: {
     type: Boolean,
+  },
+  client: {
+    type: Object
+  },
+  shippingAddress: {
+    type: Object
+  },
+  price: {
+    type: Number
+  },
+  isProcessed: {
+    type: Boolean
   }
 });
 

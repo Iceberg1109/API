@@ -46,10 +46,24 @@ module.exports = {
       importedCount: 0,
       addedCount: 0,
       soldCount: 0
-    };
+    }
 
-    const user = await ProductModel.create(product_details);
-    return res.json({status: "success"});
+    var product = await ProductModel.create(product_details);
+    for (var idx = 0; idx < product_details.variants.length; idx ++ ) {
+      product_details.variants[idx].sku = product._id + "-" + product_details.variants[idx].options.join('-');
+    }
+
+    await ProductModel.updateOne({_id:product._id}, product_details, function(err, doc) {
+      if (err) {
+        return res.json({
+          status: "failure",
+          error: {
+            message: json_encode(err)
+          }
+        });
+      }
+      return res.json({status : 'success'});
+    });
   },
   editProduct: async function (req, res) {
     var product_id = req.body.id;
@@ -66,7 +80,7 @@ module.exports = {
       soldCount: 0
     };
 
-    user = await ProductModel.updateOne({_id:product_id}, product_details, function(err, doc) {
+    await ProductModel.updateOne({_id:product_id}, product_details, function(err, doc) {
       if (err) {
         return res.json({
           status: "failure",

@@ -78,5 +78,20 @@ router.post('/product/buy', (req, res, next) => { // start buying process
 router.post('/order/listAll', (req, res) => { // execute payment
   OrderController.getOrders(req, res);
 });
+router.post('/order/listProcessed', (req, res) => { // execute payment
+  OrderController.getProcessedOrders(req, res);
+});
+router.post('/order/listShipped', (req, res) => { // execute payment
+  OrderController.getShippedOrders(req, res);
+});
+router.post('/order/listUnshipped', (req, res) => { // execute payment
+  OrderController.getUnshippedOrders(req, res);
+});
+router.post('/order/markasshipped', (req, res) => { // execute payment
+  OrderController.markAsShipped(req, res);
+});
+router.post('/order/markasprocessed', (req, res) => { // execute payment
+  OrderController.markAsProcessed(req, res);
+});
 
 module.exports = router;

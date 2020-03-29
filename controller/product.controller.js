@@ -273,11 +273,8 @@ module.exports = {
     var api_url = "https://" + user.storeName + "/admin/api/2019-07/graphql.json";
     try {
       const response = await Fetch_GraphQL(api_url, NEW_PRODCUT, user.storeAccessToken);
-      console.log("after adding product => ", response);
 
       // Add this product to the user's products' list
-      //var user = await UserModel.findById(req.user._id);
-      console.log(response.data.productCreate.userErrors.length);
       if (response.errors || response.data.productCreate.userErrors.length > 0) {
         return res.json({
           status: "failure",
@@ -287,24 +284,26 @@ module.exports = {
         });
       }
 
-      var my_products = user.myProducts;
+      var myProducts = user.myProducts;
       product_details.id = req.body.id;
-      my_products.push(product_details);
+      myProducts.push(product_details);
+      importedProducts = user.importedProducts.filter(item => item.id !== product_id)
 
-      user = await UserModel.updateOne({_id:req.user._id}, {myProducts: my_products}, function(err, doc) {
-        if (err) {
-          return res.json({
-            status: "failure",
-            error: {
-              message: "Error while find on database"
-            }
-          });
+      user = await UserModel.updateOne({_id:req.user._id}, {myProducts,importedProducts},
+        function(err, doc) {
+          if (err) {
+            return res.json({
+              status: "failure",
+              error: {
+                message: "Error while find on database"
+              }
+            });
+          }
+          return res.json({status : 'success'});
         }
-        return res.json({status : 'success'});
-      });
+      );
     }
     catch(err) {
-      console.log("adding product err => ", err);
       return res.json({
         status: "failure",
         error: {
