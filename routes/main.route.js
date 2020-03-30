@@ -84,8 +84,8 @@ router.post('/order/listProcessed', (req, res) => { // execute payment
 router.post('/order/listShipped', (req, res) => { // execute payment
   OrderController.getShippedOrders(req, res);
 });
-router.post('/order/listUnshipped', (req, res) => { // execute payment
-  OrderController.getUnshippedOrders(req, res);
+router.post('/order/listUnprocessed', (req, res) => { // execute payment
+  OrderController.getUnprocessedOrders(req, res);
 });
 router.post('/order/markasshipped', (req, res) => { // execute payment
   OrderController.markAsShipped(req, res);

@@ -222,6 +222,7 @@ module.exports = {
 
     user = await UserModel.updateOne({_id:req.user._id}, {importedProducts: importedProducts}, function(err, doc) {
       if (err) {
+        console.log(err)
         return res.json({
           status: "failure",
           error: {
@@ -236,7 +237,7 @@ module.exports = {
     var import_id = req.body.id;
     var user = await UserModel.findById(req.user._id);
     var product_details = user.importedProducts.find(x => x.id == import_id);
-    console.log(product_details);
+
     product_details.id = `gid://shopify/Product/${product_details.id}`;
    
     for (var idx = 0; idx < product_details.variants.length; idx ++ ) {
@@ -250,8 +251,6 @@ module.exports = {
         product_details.variants[idx].originalPrice = undefined;
       }
     }
-
-    console.log("Add product", product_details);
 
     const NEW_PRODCUT = JSON.stringify({
       query: `mutation($input: ProductInput!) {
@@ -273,13 +272,13 @@ module.exports = {
     var api_url = "https://" + user.storeName + "/admin/api/2019-07/graphql.json";
     try {
       const response = await Fetch_GraphQL(api_url, NEW_PRODCUT, user.storeAccessToken);
-
+      
       // Add this product to the user's products' list
       if (response.errors || response.data.productCreate.userErrors.length > 0) {
         return res.json({
           status: "failure",
           error: {
-            message: "Error while find on database"
+            message: "Error while adding to store"
           }
         });
       }
@@ -287,9 +286,9 @@ module.exports = {
       var myProducts = user.myProducts;
       product_details.id = req.body.id;
       myProducts.push(product_details);
-      importedProducts = user.importedProducts.filter(item => item.id !== product_id)
-
-      user = await UserModel.updateOne({_id:req.user._id}, {myProducts,importedProducts},
+      importedProducts = user.importedProducts.filter(item => item.id !== req.body.id)
+      
+      user = await UserModel.updateOne({_id:req.user._id}, {myProducts, importedProducts},
         function(err, doc) {
           if (err) {
             return res.json({
@@ -304,6 +303,7 @@ module.exports = {
       );
     }
     catch(err) {
+      console.log(err)
       return res.json({
         status: "failure",
         error: {

@@ -21,6 +21,33 @@ Fetch_GraphQL = async (url, fields, storeAccessToken) => {
   return responseJson;
 };
 
+getOrderDetails = (user, orders) => {
+  var orders_details = [];
+  for(let i = 0; i < orders.length; i ++) {
+    let product = user.myProducts.find(x => x.id === (orders[i].type + "-" + orders[i].product_id));
+    let variant = product.variants.find(x => x.sku === orders[i].sku);
+    
+    orders_details.push({
+      id: orders[i]._id,
+      storeName: orders[i].storeName,
+      type: orders[i].type,
+      quantity: orders[i].quantity,
+      product_id: orders[i].product_id,
+      sku: orders[i].sku,
+      isShipped: orders[i].isShipped,
+      isProcessed: orders[i].isProcessed,
+      client: orders[i].client, 
+      shippingAddress: orders[i].shippingAddress,
+      price:  orders[i].price,
+      variant: {
+        title: product.title,
+        image: variant.imageSrc ? variant.imageSrc : product.images[0].src
+      }
+    })
+  }
+
+  return orders_details;
+}
 module.exports = {
   orderCreated: async function(req, res) {
     generated_hash = crypto
@@ -86,34 +113,13 @@ module.exports = {
         });
       }
       
-      var orders_details = [];
-      for(let i = 0; i < orders.length; i ++) {
-        let product = user.myProducts.find(x => x.id === (orders[i].type + "-" + orders[i].product_id));
-        let variant = product.variants.find(x => x.sku === orders[i].sku);
-        let _variant = {
-          title: product.title,
-          image: variant.imageSrc ? variant.imageSrc : product.images[0].src,
-        }
-        orders_details.push({
-          storeName: orders[i].storeName,
-          type: orders[i].type,
-          quantity: orders[i].quantity,
-          product_id: orders[i].product_id,
-          sku: orders[i].sku,
-          isShipped: orders[i].isShipped,
-          client: orders[i].client, 
-          shippingAddress: orders[i].shippingAddress,
-          price:  orders[i].price,
-          variant: {
-            title: product.title,
-            image: variant.imageSrc ? variant.imageSrc : product.images[0].src
-          }
-        })
-      }
-
+      var orders_details = getOrderDetails(user, orders);
+      console.log(orders_details);
       return res.json({
         status: "success",
-        data: orders_details[0]
+        data:{
+          orders: orders_details
+        } 
       }); 
     });
   },
@@ -137,13 +143,14 @@ module.exports = {
           }
         });
       }
-  
+
+      var orders_details = getOrderDetails(user, orders);
       return res.json({
         status: "success",
         data: {
-          orders: orders
+          orders: orders_details
         }
-      }); 
+      });
     });
   },
   getShippedOrders: async function (req, res) {
@@ -166,16 +173,18 @@ module.exports = {
           }
         });
       }
-  
+
+      var orders_details = getOrderDetails(user, orders);
+
       return res.json({
         status: "success",
         data: {
-          orders: orders
+          orders: orders_details
         }
-      }); 
+      });
     });
   },
-  getUnshippedOrders: async function (req, res) {
+  getUnprocessedOrders: async function (req, res) {
     var user = await UserModel.findById(req.user._id);
     if (user == null ) {
       return res.json({
@@ -186,7 +195,7 @@ module.exports = {
       });
     }
 
-    OrderModel.find({storeName: user.storeName, isShipped: false}, function(err, orders) {
+    OrderModel.find({storeName: user.storeName, isProcessed: false}, function(err, orders) {
       if (err) {
         return res.json({
           status: "failure",
@@ -195,13 +204,15 @@ module.exports = {
           }
         });
       }
-  
+      
+      var orders_details = getOrderDetails(user, orders);
+      
       return res.json({
         status: "success",
         data: {
-          orders: orders
+          orders: orders_details
         }
-      }); 
+      });
     });
   },
   markAsShipped: async function(req, res) {
@@ -242,8 +253,7 @@ module.exports = {
         }
       });
     }
-    
-    order.isShipped = true;
+
     await OrderModel.updateOne({_id:order_id}, {isProcessed: true}, function(err, doc) {
       if (err) {
         return res.json({
