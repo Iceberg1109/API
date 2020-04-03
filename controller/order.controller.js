@@ -24,19 +24,16 @@ Fetch_GraphQL = async (url, fields, storeAccessToken) => {
 getOrderDetails = (user, orders) => {
   var orders_details = [];
   for(let i = 0; i < orders.length; i ++) {
-    let product = user.myProducts.find(x => x.id === (orders[i].type + "-" + orders[i].product_id));
+    let product = user.myProducts.find(x => x.id === ("self-" + orders[i].product_id));
     let variant = product.variants.find(x => x.sku === orders[i].sku);
     
     orders_details.push({
       id: orders[i]._id,
-      storeName: orders[i].storeName,
-      type: orders[i].type,
+      client: orders[i].client,
       quantity: orders[i].quantity,
       product_id: orders[i].product_id,
       sku: orders[i].sku,
-      isShipped: orders[i].isShipped,
-      isProcessed: orders[i].isProcessed,
-      client: orders[i].client, 
+      status: orders[i].status,
       shippingAddress: orders[i].shippingAddress,
       price:  orders[i].price,
       variant: {
@@ -49,47 +46,30 @@ getOrderDetails = (user, orders) => {
   return orders_details;
 }
 module.exports = {
-  orderCreated: async function(req, res) {
-    generated_hash = crypto
-      // .createHmac('sha256', process.env.SHOPIFY_PARTNER_APISECRET)
-      .createHmac('sha256', "146f314814ccaf1ffd014c219b527620dbdf4d338bc9eb43bb4409b0671a2509")
-      .update(Buffer.from(req.rawbody))
-      .digest('base64');
+  addOrders: async function(import_id, product_details, user) {
+    var type = import_id.split('-')[0];
+    var product_id = import_id.split('-')[1];
 
-    if (generated_hash == req.headers['x-shopify-hmac-sha256']) { // Safe Hook
-      var storeName = req.body.order_status_url.split('/')[2];
-      const {line_items, shipping_address, customer, updated_at} = req.body;
+    if (type != 'self') return;
+    for (var idx = 0; idx < product_details.variants.length; idx ++ ) {
+      let product = await ProductModel.findById(product_id);
+      let variant = product.variants.find(x => ("self-" + x.sku) === product_details.variants[idx].sku);
+      let price = variant.price;
 
-      for(var i = 0; i < line_items.length; i ++) {
-        let type = line_items[i].sku.split('-')[0];
-        let product_id = line_items[i].sku.split('-')[1];
-        let price = undefined;
-        if (type === 'self') {
-          let product = await ProductModel.findById(product_id);
-          let variant = product.variants.find(x => ("self-" + x.sku) === line_items[i].sku);
-          price = variant.price;
-        }
-
-        await OrderModel.create({
-          storeName: storeName, 
-          type: type,
-          quantity: line_items[i].quantity,
-          product_id: product_id,
-          sku: line_items[i].sku,
-          isShipped: false,
-          isProcessed: false,
-          client: {
-            email: customer.email,
-            first_name: customer.first_name,
-            lastst_name: customer.lastst_name
-          },
-          date: updated_at,
-          shippingAddress: shipping_address,
-          price: price
-        });
-      }
-    } else { // Unsafe Hook
-      console.log("danger");
+      await OrderModel.create({
+        client: {
+          name: user.name,
+          email: user.email,
+          storeName: user.storeName,
+        },
+        quantity: product_details.variants[idx].inventoryQuantity,
+        product_id: product_id,
+        sku: product_details.variants[idx].sku,
+        // date: ,
+        shippingAddress: "",
+        price: price,
+        status: "pending"
+      });
     }
   },
   getOrders: async function (req, res) {
@@ -103,7 +83,7 @@ module.exports = {
       });
     }
 
-    OrderModel.find({storeName: user.storeName}, function(err, orders) {
+    OrderModel.find({"client.email": user.email}, function(err, orders) {
       if (err) {
         return res.json({
           status: "failure",
@@ -134,7 +114,7 @@ module.exports = {
       });
     }
 
-    OrderModel.find({storeName: user.storeName, isProcessed: true}, function(err, orders) {
+    OrderModel.find({"client.email": user.email, status: "processed"}, function(err, orders) {
       if (err) {
         return res.json({
           status: "failure",
@@ -164,7 +144,7 @@ module.exports = {
       });
     }
 
-    OrderModel.find({storeName: user.storeName, isShipped: true}, function(err, orders) {
+    OrderModel.find({"client.email": user.email, status: "shipped"}, function(err, orders) {
       if (err) {
         return res.json({
           status: "failure",
@@ -195,7 +175,7 @@ module.exports = {
       });
     }
 
-    OrderModel.find({storeName: user.storeName, isProcessed: false}, function(err, orders) {
+    OrderModel.find({"client.email": user.email, status: "pending"}, function(err, orders) {
       if (err) {
         return res.json({
           status: "failure",
@@ -228,8 +208,7 @@ module.exports = {
       });
     }
     
-    order.isShipped = true;
-    await OrderModel.updateOne({_id:order_id}, {isShipped: true}, function(err, doc) {
+    await OrderModel.updateOne({_id:order_id}, {status: "shipped"}, function(err, doc) {
       if (err) {
         return res.json({
           status: "failure",
@@ -254,7 +233,7 @@ module.exports = {
       });
     }
 
-    await OrderModel.updateOne({_id:order_id}, {isProcessed: true}, function(err, doc) {
+    await OrderModel.updateOne({_id:order_id}, {status: "processed", shippingAddress:req.body.address }, function(err, doc) {
       if (err) {
         return res.json({
           status: "failure",

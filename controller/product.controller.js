@@ -1,4 +1,3 @@
-var paypal = require('paypal-rest-sdk');
 const fetch = require("node-fetch");
 
 // var TopClient = require('node-taobao-topclient').default;
@@ -6,6 +5,8 @@ var TopClient = require('topsdk');
 
 const ProductModel = require('../model/product.model');
 const UserModel = require('../model/user.model');
+
+const OrderController = require('../controller/order.controller');
 
 Fetch_GraphQL = async (url, fields, storeAccessToken) => {
   const response = await fetch(
@@ -215,7 +216,6 @@ module.exports = {
       product_details.variants[idx].originalPrice = product_details.variants[idx].price;
       product_details.variants[idx].price = user.priceRule * product_details.variants[idx].price;
     }
-    console.log("product details => ", product_details);
 
     var importedProducts = user.importedProducts;
     importedProducts.push(product_details);
@@ -236,10 +236,10 @@ module.exports = {
   addProduct2Store: async function  (req, res) {
     var import_id = req.body.id;
     var user = await UserModel.findById(req.user._id);
-    var product_details = user.importedProducts.find(x => x.id == import_id);
+    var product_details = user.importedProducts.find(x => x.id === import_id);
 
     product_details.id = `gid://shopify/Product/${product_details.id}`;
-   
+
     for (var idx = 0; idx < product_details.variants.length; idx ++ ) {
       product_details.variants[idx].inventoryManagement = 'SHOPIFY';
       product_details.variants[idx].sku = req.body.id + "-" + product_details.variants[idx].options.join('-');
@@ -267,8 +267,6 @@ module.exports = {
       }
     });
 
-    var user = await UserModel.findById(req.user._id);
-
     var api_url = "https://" + user.storeName + "/admin/api/2019-07/graphql.json";
     try {
       const response = await Fetch_GraphQL(api_url, NEW_PRODCUT, user.storeAccessToken);
@@ -288,22 +286,11 @@ module.exports = {
       myProducts.push(product_details);
       importedProducts = user.importedProducts.filter(item => item.id !== req.body.id)
       
-      user = await UserModel.updateOne({_id:req.user._id}, {myProducts, importedProducts},
-        function(err, doc) {
-          if (err) {
-            return res.json({
-              status: "failure",
-              error: {
-                message: "Error while find on database"
-              }
-            });
-          }
-          return res.json({status : 'success'});
-        }
-      );
+      user = await UserModel.updateOne({_id:req.user._id}, {myProducts, importedProducts});
+      await OrderController.addOrders(import_id, product_details, user);
+      return res.json({status : 'success'});
     }
     catch(err) {
-      console.log(err)
       return res.json({
         status: "failure",
         error: {
@@ -311,126 +298,5 @@ module.exports = {
         }
       });
     }
-  },
-  startPayment: async function  (req, res) {
-    var  name = req.body.title;
-    var price = req.body.price;
-    
-    var payment = {
-      "intent": "authorize",
-      "payer": {
-        "payment_method": "paypal"
-      },
-      "redirect_urls": {
-        "return_url": "http://127.0.0.1:3000/success",
-        "cancel_url": "http://127.0.0.1:3000/err"
-      },
-      "transactions": [{
-        "item_list": {
-            "items": [{
-                "name": name,
-                "sku": "001",
-                "price": price,
-                "currency": "USD",
-                "quantity": 1
-            }]
-        },
-        "amount": {
-          "total": parseInt(price),
-          "currency": "USD"
-        },
-        "description": " a book on mean stack "
-      }]
-    }
-
-    createPay( payment ) 
-    .then( ( transaction ) => {
-      var id = transaction.id; 
-      var links = transaction.links;
-      var counter = links.length; 
-      console.log("transaction:", transaction);
-      while( counter -- ) {
-        if ( links[counter].method == 'REDIRECT') {
-          return res.json({
-            status: "success", 
-            data: {
-              link: links[counter].href
-            }
-          });
-        }
-        else {
-          return res.json({
-            status: "failure",
-            error: {
-              message: "Error while creating login"
-            }
-          });
-        }
-      }
-    })
-    .catch( ( err ) => { 
-      console.log( err ); 
-      return res.json({
-        status: "failure",
-        error: {
-          message: "Something went wrong"
-        }
-      });
-    });
-  },
-  executePayment: async function  (req, res) {
-    console.log(req.query); 
-
-    const payerId = req.query.PayerID;
-    const paymentId = req.query.paymentId;
-    
-    const execute_payment_json = {
-      "payer_id" : payerId, 
-      "transactions" : [{
-        "amount" : {
-          "currency": "USD",
-          "total": "39.00"
-        }
-      }]
-    };
-
-    paypal.payment.execute(paymentId, execute_payment_json, (error, payment) => {
-      if(error) {
-        console.log(error.response);
-        throw error;
-      } else {
-        console.log("Get Payment Response");
-        console.log(JSON.stringify(payment));
-        res.redirect('/success.html'); 
-      }
-    });
   }
-}
-var path = [];
-var single = [];
-
-function func(options, step)
-{
-	if( step >= options.length ) {
-    path.push([...single]);
-  } 
-  else {
-    for(var i = 0; i < options[step].length; i ++) {
-      single[step] = i + 1;
-      func(options, step + 1);
-    }
-  }
-}
-
-var createPay = ( payment ) => {
-  return new Promise( ( resolve , reject ) => {
-    paypal.payment.create( payment , function( err , payment ) {
-    if ( err ) {
-      reject(err); 
-    }
-    else {
-      resolve(payment); 
-    }
-    }); 
-  });
 }

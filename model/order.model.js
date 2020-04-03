@@ -2,10 +2,6 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 const OrderSchema = new Schema({
-  type : {
-    type : String,
-    required : true,
-  },
   product_id : {
     type : String,
     required : true,
@@ -16,26 +12,18 @@ const OrderSchema = new Schema({
   },
   quantity : {
     type : Number,
-    required : true 
-  },
-  storeName: {
-    type : String,
-    required : true,
-  },
-  isShipped: {
-    type: Boolean,
   },
   client: {
     type: Object
   },
   shippingAddress: {
-    type: Object
+    type: String
   },
   price: {
     type: Number
   },
-  isProcessed: {
-    type: Boolean
+  status: {
+    type: String
   }
 });
 
