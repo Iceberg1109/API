@@ -17,7 +17,7 @@ const OrderSchema = new Schema({
     type: Object
   },
   shippingAddress: {
-    type: String
+    type: Object
   },
   price: {
     type: Number

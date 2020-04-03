@@ -286,7 +286,7 @@ module.exports = {
       myProducts.push(product_details);
       importedProducts = user.importedProducts.filter(item => item.id !== req.body.id)
       
-      user = await UserModel.updateOne({_id:req.user._id}, {myProducts, importedProducts});
+      await UserModel.updateOne({_id:req.user._id}, {myProducts, importedProducts});
       await OrderController.addOrders(import_id, product_details, user);
       return res.json({status : 'success'});
     }

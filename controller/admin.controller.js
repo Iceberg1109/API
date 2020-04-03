@@ -14,21 +14,18 @@ sendOrders = async (orders, res) => {
 
   var order_list = [];
   for(var i = 0; i < orders.length; i ++) {
-    var user = await UserModel.findOne({storeName: orders[i].storeName});
+    var user = await UserModel.findOne({email: orders[i].client.email});
     
-    let product = user.myProducts.find(x => x.id === (orders[i].type + "-" + orders[i].product_id));
+    let product = user.myProducts.find(x => x.id === ("self-" + orders[i].product_id));
     let variant = product.variants.find(x => x.sku === orders[i].sku);
-
+    
     order_list.push ({
       id: orders[i]._id,
-      storeName: orders[i].storeName,
-      type: orders[i].type,
+      client: orders[i].client,
       quantity: orders[i].quantity,
       product_id: orders[i].product_id,
       sku: orders[i].sku,
-      isShipped: orders[i].isShipped,
-      isProcessed: orders[i].isProcessed,
-      client: orders[i].client, 
+      status: orders[i].status,
       shippingAddress: orders[i].shippingAddress,
       price:  orders[i].price,
       variant: {
@@ -149,17 +146,17 @@ module.exports = {
     sendOrders(orders, res);
   },
   getShippedOrders: async function (req, res) {
-    var orders = await OrderModel.find({isShipped: true});
+    var orders = await OrderModel.find({status: "shipped"});
     
     sendOrders(orders, res);
   },
   getProcessedOrders: async function (req, res) {
-    var orders = await OrderModel.find({isProcessed: true});
+    var orders = await OrderModel.find({status: "processed"});
     
     sendOrders(orders, res);
   },
   getUnprocessedOrders: async function (req, res) {
-    var orders = await OrderModel.find({isProcessed: false});
+    var orders = await OrderModel.find({status: "pending"});
     
     sendOrders(orders, res);
   },
@@ -176,7 +173,7 @@ module.exports = {
     
     var user_list = [];
     for(var uidx = 0; uidx < users.length; uidx ++) {
-      var orders = await OrderModel.find({storeName: users[uidx].storeName});
+      var orders = await OrderModel.find({"client.email": users[uidx].email});
       
       var order_list = [];
       
@@ -186,19 +183,18 @@ module.exports = {
         var isShipped = "Undelivered";
         if (orders[order_idx].isShipped) isShipped = "Delivered";
 
-        let product = users[uidx].myProducts.find(x => x.id === (orders[order_idx].type + "-" + orders[order_idx].product_id));
-        var variant = product.variants.find(x => x.sku === orders[order_idx].sku);
-
+        // let product = users[uidx].myProducts.find(x => x.id === (orders[order_idx].type + "-" + orders[order_idx].product_id));
+        // var variant = product.variants.find(x => x.sku === orders[order_idx].sku);
+        let product = users[uidx].myProducts.find(x => x.id === ("self-" + orders[order_idx].product_id));
+        let variant = product.variants.find(x => x.sku === orders[order_idx].sku);
+        
         order_list.push ({
           id: orders[order_idx]._id,
-          storeName: orders[order_idx].storeName,
-          type: orders[order_idx].type,
+          client: orders[order_idx].client,
           quantity: orders[order_idx].quantity,
           product_id: orders[order_idx].product_id,
           sku: orders[order_idx].sku,
-          isShipped: orders[order_idx].isShipped,
-          isProcessed: orders[order_idx].isProcessed,
-          client: orders[order_idx].client, 
+          status: orders[order_idx].status,
           shippingAddress: orders[order_idx].shippingAddress,
           price:  orders[order_idx].price,
           variant: {

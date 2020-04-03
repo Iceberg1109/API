@@ -49,7 +49,7 @@ module.exports = {
   addOrders: async function(import_id, product_details, user) {
     var type = import_id.split('-')[0];
     var product_id = import_id.split('-')[1];
-
+    console.log("Users", user);
     if (type != 'self') return;
     for (var idx = 0; idx < product_details.variants.length; idx ++ ) {
       let product = await ProductModel.findById(product_id);
@@ -66,7 +66,7 @@ module.exports = {
         product_id: product_id,
         sku: product_details.variants[idx].sku,
         // date: ,
-        shippingAddress: "",
+        shippingAddress: null,
         price: price,
         status: "pending"
       });

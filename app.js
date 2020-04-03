@@ -11,7 +11,7 @@ const request = require("request-promise");
 const nonce = require('nonce')();
 
 const UserModel = require('./model/user.model');
-const OrderController = require('./controller/order.controller');
+const cloudinary = require('cloudinary')
 // DotEnv config
 require("dotenv").config();
 
@@ -27,29 +27,41 @@ mongoose.Promise = global.Promise;
 // Passport fot authentication and authorization
 require("./config/passport");
 
+cloudinary.config({ 
+  cloud_name: process.env.CLOUD_NAME, 
+  api_key: process.env.API_KEY, 
+  api_secret: process.env.API_SECRET
+});
+
 app.use( bodyParser.urlencoded({ extended : false }) );
 app.use(bodyParser.json({
   type:'*/*',
   limit: '50mb',
   verify: function(req, res, buf) {
-      if (req.url.startsWith('/normal/order/')){
-        req.rawbody = buf;
-      }
+    if (req.url.startsWith('/normal/order/')){
+      req.rawbody = buf;
+    }
   }
 }));
 app.use(cors());
 app.options("*", cors());
+
+app.use(function(req, res, next) {
+  // res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  // // res.header("Access-Control-Allow-Origin", "YOUR-DOMAIN.TLD");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Request-Method", "*");
+  res.setHeader("Access-Control-Allow-Methods", "ET, POST, OPTIONS, PUT, PATCH, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  next();
+});
 
 // Main Routing
 const auth_routes   = require('./routes/auth.route'); // Authentication Routes
 const normal_routes = require('./routes/normal.route'); // Routes, don't need authorization
 const admin_route   = require('./routes/admin.route'); // Admin Routes, need authorization
 const app_route     = require('./routes/main.route'); // Routes, need authorization
-
-app.use(function(req, res, next) {
-  res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-    next();
-});
 
 // Authorization doesn't require
 app.use('/auth', auth_routes);
