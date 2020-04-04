@@ -9,6 +9,7 @@ const querystring = require("querystring");
 const crypto = require("crypto");
 const request = require("request-promise");
 const nonce = require('nonce')();
+const fileUpload = require('express-fileupload');
 
 const UserModel = require('./model/user.model');
 const cloudinary = require('cloudinary')
@@ -44,15 +45,15 @@ app.use(bodyParser.json({
   }
 }));
 app.use(cors());
-app.options("*", cors());
-
+// app.options("*", cors());
+app.use(fileUpload());
 app.use(function(req, res, next) {
   // res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   // // res.header("Access-Control-Allow-Origin", "YOUR-DOMAIN.TLD");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Request-Method", "*");
-  res.setHeader("Access-Control-Allow-Methods", "ET, POST, OPTIONS, PUT, PATCH, DELETE");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
   res.setHeader("Access-Control-Allow-Headers", "*");
   next();
 });

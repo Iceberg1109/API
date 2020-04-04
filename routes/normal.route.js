@@ -33,6 +33,8 @@ router.get('/product/buy-success', (req, res) => { // execute payment
 // Image upload
 router.post('/image-upload', (req, res) => {
   console.log("path");
+  console.log(req.files);
+  
   const form = formidable({ multiples: true });
  
   form.parse(req, (err, fields, files) => {

@@ -242,6 +242,7 @@ module.exports = {
 
     for (var idx = 0; idx < product_details.variants.length; idx ++ ) {
       product_details.variants[idx].inventoryManagement = 'SHOPIFY';
+      product_details.variants[idx].inventoryQuantity = parseInt(product_details.variants[idx].inventoryQuantity);
       product_details.variants[idx].sku = req.body.id + "-" + product_details.variants[idx].options.join('-');
       if (product_details.variants[idx].salePrice) {
         product_details.variants[idx].price = product_details.variants[idx].salePrice;
@@ -270,7 +271,7 @@ module.exports = {
     var api_url = "https://" + user.storeName + "/admin/api/2019-07/graphql.json";
     try {
       const response = await Fetch_GraphQL(api_url, NEW_PRODCUT, user.storeAccessToken);
-      
+
       // Add this product to the user's products' list
       if (response.errors || response.data.productCreate.userErrors.length > 0) {
         return res.json({
