@@ -28,6 +28,7 @@ module.exports = {
   getSelfProducts: function (req, res) {
     ProductModel.find({}, function(err, products) {
       if (err) {
+        console.log(err)
         return res.json({
           status: "failure",
           error: {

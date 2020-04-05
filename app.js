@@ -12,7 +12,7 @@ const nonce = require('nonce')();
 const fileUpload = require('express-fileupload');
 
 const UserModel = require('./model/user.model');
-const cloudinary = require('cloudinary')
+
 // DotEnv config
 require("dotenv").config();
 
@@ -21,18 +21,15 @@ mongoose.set("useNewUrlParser", true);
 mongoose.set("useUnifiedTopology", true);
 mongoose.set("useCreateIndex", true);
 mongoose.set("useFindAndModify", false);
-mongoose.connect(process.env.MONGODB_URL);
+mongoose.connect(process.env.MONGODB_URL, {
+  user: process.env.MONGODB_USER,
+  pass: process.env.MONGODB_PWD
+});
 mongoose.connection.on("error", error => console.log(error));
 mongoose.Promise = global.Promise;
 
 // Passport fot authentication and authorization
 require("./config/passport");
-
-cloudinary.config({ 
-  cloud_name: process.env.CLOUD_NAME, 
-  api_key: process.env.API_KEY, 
-  api_secret: process.env.API_SECRET
-});
 
 app.use( bodyParser.urlencoded({ extended : false }) );
 app.use(bodyParser.json({
