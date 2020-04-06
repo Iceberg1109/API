@@ -9,7 +9,6 @@ const querystring = require("querystring");
 const crypto = require("crypto");
 const request = require("request-promise");
 const nonce = require('nonce')();
-const fileUpload = require('express-fileupload');
 
 const UserModel = require('./model/user.model');
 
@@ -43,7 +42,6 @@ app.use(bodyParser.json({
 }));
 app.use(cors());
 // app.options("*", cors());
-app.use(fileUpload());
 app.use(function(req, res, next) {
   // res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
