@@ -1,13 +1,17 @@
 const fetch = require("node-fetch");
 
+/*
+ * This node modules are for aliexpress api invoke
+*/
 // var TopClient = require('node-taobao-topclient').default;
-var TopClient = require('topsdk');
+//var TopClient = require('topsdk');
 
 const ProductModel = require('../model/product.model');
 const UserModel = require('../model/user.model');
 
 const OrderController = require('../controller/order.controller');
 
+// Send post request corresponding to the GraphQL
 Fetch_GraphQL = async (url, fields, storeAccessToken) => {
   const response = await fetch(
     url,
@@ -25,6 +29,9 @@ Fetch_GraphQL = async (url, fields, storeAccessToken) => {
 };
 
 module.exports = {
+  /*
+  *  List all self products
+  */
   getSelfProducts: function (req, res) {
     ProductModel.find({}, function(err, products) {
       if (err) {
@@ -45,6 +52,9 @@ module.exports = {
       });  
     });
   },
+  /*
+  *  List self products by category
+  */
   getByCategory: function (req, res) {
     ProductModel.find({category: req.body.category}, function(err, products) {
       if (err) {
@@ -64,6 +74,9 @@ module.exports = {
       }); 
     });
   },
+  /*
+  *  List the detail of one self product
+  */
   getById: async function (req, res) {
     var product = await ProductModel.findById(req.body.id);
     if (product == null) {
@@ -79,6 +92,9 @@ module.exports = {
       data: product
     });
   },
+  /*
+   * List on-sale products
+  */
   getSaleProducts: function (req, res) {
     ProductModel.find({onSale: true}, function(err, products) {
       if (err) {
@@ -98,6 +114,9 @@ module.exports = {
       }); 
     });
   },
+  /*
+   * List hot products
+  */
   getTopSellingProducts: function (req, res) {
     ProductModel.find({}).sort('-soldCount').limit(req.body.count).exec(function(err, products){
       if (err) {
@@ -117,6 +136,9 @@ module.exports = {
       });
     });
   },
+  /*
+   * Get the detail of an aliexpress product
+  */
   getAliProductInfo: async function (req, res) {
     var product_id = req.body.product_id;
     console.log("here", product_id);
@@ -189,6 +211,9 @@ module.exports = {
       return res.json({status: "success", data: product_details});
     });
   },
+  /*
+   * Add product the users' imported list
+  */
   importProduct: async function  (req, res) {
     var user = await UserModel.findById(req.user._id);
 
@@ -234,6 +259,11 @@ module.exports = {
       return res.json({status : 'success'});
     });
   },
+  /*
+   * Add the product to the shopify store
+   * and remove product the users' imported list
+   * also, add the orders
+  */
   addProduct2Store: async function  (req, res) {
     var import_id = req.body.id;
     var user = await UserModel.findById(req.user._id);

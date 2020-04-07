@@ -8,12 +8,15 @@ var  hbs = require('nodemailer-express-handlebars');
 var crypto = require('crypto');
 
 module.exports = {
+  /*
+  *  Login
+  */
   login: async function (req, res, next) {
+    // Use passport to login
     passport.authenticate('login', async (err, user, info) => {
       try {
         if(err){
           const error = new Error('An Error occured');
-          console.log("auth controller", error);
           return next(error);
         }
         if(!user) {
@@ -36,10 +39,14 @@ module.exports = {
       }
     })(req, res, next);
   },
+  /*
+  *  Forogot password
+  */
   forgotPwd: function (req, res) {
     var MAIL_USERNAME = process.env.MAIL_USERNAME;
     var MAIL_PASSWORD= process.env.MAIL_PASSWORD;
 
+    // Send reset email to the user
     async.waterfall([
       function (done) {
         crypto.randomBytes(20, function (err, buf) {
@@ -101,8 +108,10 @@ module.exports = {
       return res.json({ message: "failed", error: err });
     });
   },
+  /*
+  *  Reset password
+  */
   resetPwd: function(req, res) {
-    console.log('reset-password', req.body);
     var password = req.body.password;
     async.waterfall([
       function (done) {
@@ -112,12 +121,10 @@ module.exports = {
             $gt: Date.now()
           }
         }, function (err, user) {
-          console.log(err, user)
           if (user == null) {
             return res.json({status: "no user"});
           }
-          console.log('reset password', user);
-
+          
           user.password = password;
           user.resetPasswordToken = "";
           user.resetPasswordExpires = null;

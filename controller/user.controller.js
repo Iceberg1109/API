@@ -19,6 +19,9 @@ Fetch_GraphQL = async (url, fields, storeAccessToken) => {
 };
 
 module.exports = {
+  /*
+   * Get the details of the user
+  */
   getUserInfo: function (req, res, next) {
     UserModel.findById(req.user._id, function (err, user) {
       if (err) {
@@ -43,6 +46,9 @@ module.exports = {
       });
     });
   },
+  /*
+   * Get the products added to store, only for this user
+  */
   getMyProducts: function (req, res, next) {
     UserModel.findById(req.user._id, function (err, user) {
       if (err)if (err) {
@@ -62,6 +68,9 @@ module.exports = {
       });
     });
   },
+  /*
+   * Get the imported products list of the user
+  */
   getImportedProducts: function (req, res, next) {
     UserModel.findById(req.user._id, function (err, user) {
       if (err)if (err) {
@@ -81,6 +90,9 @@ module.exports = {
       });
     });
   },
+  /*
+   * Edit the imported product the user
+  */
   editImportedProduct: async function  (req, res) {
     var product_details = {
       id:  req.body.id,
@@ -109,6 +121,9 @@ module.exports = {
       return res.json({status : 'success'});
     });
   },
+  /*
+   * Remove the imported product the user
+  */
   removeImportedProduct: async function  (req, res) {
     var product_id =  req.body.id;
     
@@ -130,6 +145,9 @@ module.exports = {
       return res.json({status : 'success'});
     });
   },
+  /*
+   * Set the price rule of the user
+  */
   setPriceRule: async function(req, res) {
     var new_rule = req.body.rule;
     var user = await UserModel.updateOne({_id:req.user._id}, {priceRule: new_rule}, function(err, doc) {
@@ -144,6 +162,9 @@ module.exports = {
       return res.json({status : 'success'});
     });
   },
+  /*
+   * Set the sale price rule of the user
+  */
   setSalePriceRule: async function(req, res) {
     var new_rule = req.body.rule;
     var user = await UserModel.updateOne({_id:req.user._id}, {salePriceRule: new_rule}, function(err, doc) {
@@ -158,6 +179,9 @@ module.exports = {
       return res.json({status : 'success'});
     });
   },
+  /*
+   * Reset the password of the user
+  */
   resetUserPwd: async function(req, res) {
     var old_pwd = req.body.old_pwd;
     var new_pwd = req.body.new_pwd;
@@ -195,37 +219,5 @@ module.exports = {
       }
       return res.json({status : 'success'});
     });
-  },
-  addWebhook: async function  (req, res) {
-    const NEW_WEBHOOK =  JSON.stringify({
-      query: `mutation {
-        webhookSubscriptionCreate(topic: ORDERS_CREATE, webhookSubscription: {callbackUrl: "https://7896f79f.ngrok.io/normal/order/created", format: JSON}) {
-          userErrors {
-            field
-            message
-          }
-          webhookSubscription {
-            id
-          }
-        }
-      }
-      `
-    });
-
-    var user = await UserModel.findById(req.user._id);
-
-    console.log("user data => ", user.storeName, user.storeAccessToken);
-    var api_url = "https://" + user.storeName + "/admin/api/2020-01/graphql.json";
-    const response = await Fetch_GraphQL(api_url, NEW_WEBHOOK, user.storeAccessToken);
-    if (response.errors || response.data.webhookSubscriptionCreate.userErrors.length > 0) {
-      return res.json({
-        status: "failure",
-        error: {
-          message: "Could not add the webhook"
-        }
-      });
-    }
-
-    res.json({status : 'success'});
-  },
+  }
 }

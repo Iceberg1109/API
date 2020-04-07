@@ -1,3 +1,15 @@
+/*
+ * The Product Model
+ * category:   the category of the product
+ * title:      the title of the product
+ * descriptionHtml: the description of the product, written in HTML
+ * images:     the images of the product
+ * options:    the variant options, something like color, size, etc...
+ * variants:   the variants of the product
+ * importedCount: how many times the product is added the user's imported list
+ * addedCount:    how many times the product is added the user's shopify store
+ * soldCount:     how many times the product is sold
+*/
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 

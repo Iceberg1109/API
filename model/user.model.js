@@ -1,3 +1,18 @@
+/*
+ * The Product Model
+ * name:     the name of the user
+ * email:    the email address of the uesr
+ * password: the password address of the user
+ * storeName: the shopify store name of the user
+ * storeAccessToken: the shopify store access token, get when user attaches the store
+ * importedProducts: the imported products array
+ * myProducts: the array of products added to the shopify store
+ * priceRule:  the normal price rule
+ * salePriceRule: the sale price rule
+ * resetPasswordToken: the reset password token, it is sent by email when user tries to reset the password
+ * resetPasswordExpires: the reset password token expiration time
+ * isAdmin: if the user is admin
+*/
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt');
 const Schema = mongoose.Schema;

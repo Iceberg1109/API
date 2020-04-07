@@ -1,31 +1,22 @@
+/*
+*  All routes here don't require authorization,
+*  used for callbacks and password reset
+*/
 const express = require('express');
 const router = express.Router();
 
 const OrderController = require('../controller/order.controller');
-//When the user sends a post request to this route, passport authenticates the user based on the
-//middleware created previously
-router.post('/order/created', async (req, res, next) => {
-  await OrderController.orderCreated(req, res, next);
-});
 
-router.post('/order/paid', async (req, res, next) => {
-    await OrderController.orderCreated(req, res, next);
-});
-
-router.post('/forgot-pwd', async (req, res, next) => {
+router.post('/forgot-pwd', async (req, res, next) => { // Forgot password
   AuthController.forgotPwd(req, res, next);
 });
 
-router.post('/reset-pwd/', (req, res) => {
+router.post('/reset-pwd/', (req, res) => { // Reset password
   AuthController.resetPwd(req, res);
 });
 
-router.post('/shopify/', (req, res) => {
+router.post('/shopify/', (req, res) => { // Shopify callback when attaching the store to the user
   AuthController.shopifyAuth(req, res);
-});
-
-router.get('/product/buy-success', (req, res) => { // execute payment
-  ProductController.executePayment(req, res);
 });
 
 module.exports = router;

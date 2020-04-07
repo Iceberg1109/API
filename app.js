@@ -41,11 +41,9 @@ app.use(bodyParser.json({
   }
 }));
 app.use(cors());
-// app.options("*", cors());
+app.options("*", cors());
+
 app.use(function(req, res, next) {
-  // res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  // // res.header("Access-Control-Allow-Origin", "YOUR-DOMAIN.TLD");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Request-Method", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
@@ -54,15 +52,15 @@ app.use(function(req, res, next) {
 });
 
 // Main Routing
-const auth_routes   = require('./routes/auth.route'); // Authentication Routes
-const normal_routes = require('./routes/normal.route'); // Routes, don't need authorization
+const auth_routes   = require('./routes/auth.route'); // Routes for authentication
+const normal_routes = require('./routes/normal.route'); // Routes, don't require authorization
 const admin_route   = require('./routes/admin.route'); // Admin Routes, need authorization
 const app_route     = require('./routes/main.route'); // Routes, need authorization
 
-// Authorization doesn't require
+// Authorization isn't required
 app.use('/auth', auth_routes);
 app.use('/normal', normal_routes);
-// JWT authorization required
+// JWT authorization is required
 app.use('/admin/api/', passport.authenticate('jwt', { session : false }), admin_route );
 app.use('/api/', passport.authenticate('jwt', { session : false }), app_route );
 
