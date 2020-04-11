@@ -219,5 +219,40 @@ module.exports = {
       }
       return res.json({status : 'success'});
     });
-  }
+  },
+  /*
+   * Add webhook for order
+  */
+  addWebhook: async function  (req, res) {
+    const NEW_WEBHOOK =  JSON.stringify({
+      query: `mutation {
+        webhookSubscriptionCreate(topic: ORDERS_CREATE, webhookSubscription: {callbackUrl: "https://7896f79f.ngrok.io/normal/order/created", format: JSON}) {
+          userErrors {
+            field
+            message
+          }
+          webhookSubscription {
+            id
+          }
+        }
+      }
+      `
+    });
+
+    var user = await UserModel.findById(req.user._id);
+
+    console.log("user data => ", user.storeName, user.storeAccessToken);
+    var api_url = "https://" + user.storeName + "/admin/api/2020-01/graphql.json";
+    const response = await Fetch_GraphQL(api_url, NEW_WEBHOOK, user.storeAccessToken);
+    if (response.errors || response.data.webhookSubscriptionCreate.userErrors.length > 0) {
+      return res.json({
+        status: "failure",
+        error: {
+          message: "Could not add the webhook"
+        }
+      });
+    }
+
+    res.json({status : 'success'});
+  },
 }

@@ -1,4 +1,4 @@
-const fetch = require("node-fetch");
+const crypto = require("crypto");
 
 const UserModel = require('../model/user.model');
 const ProductModel = require('../model/product.model');
@@ -32,6 +32,47 @@ getOrderDetails = (user, orders) => {
   return orders_details;
 }
 module.exports = {
+  shopifyOrderCreated: async function(req, res) {
+    console.log("shopify order => ", req.body)
+    generated_hash = crypto
+      // .createHmac('sha256', process.env.SHOPIFY_PARTNER_APISECRET)
+      .createHmac('sha256', "146f314814ccaf1ffd014c219b527620dbdf4d338bc9eb43bb4409b0671a2509")
+      .update(Buffer.from(req.rawbody))
+      .digest('base64');
+
+    if (generated_hash == req.headers['x-shopify-hmac-sha256']) { // Safe Hook
+      var storeName = req.body.order_status_url.split('/')[2];
+      const {line_items, shipping_address, customer, updated_at} = req.body;
+      var user = await UserModel.findOne({storeName});
+      for(var i = 0; i < line_items.length; i ++) {
+        let type = line_items[i].sku.split('-')[0];
+        let product_id = line_items[i].sku.split('-')[1];
+        let price = undefined;
+        if (type === 'self') {
+          let product = await ProductModel.findById(product_id);
+          let variant = product.variants.find(x => ("self-" + x.sku) === line_items[i].sku);
+          price = variant.price;
+        }
+
+        await OrderModel.create({
+          client: {
+            name: user.name,
+            email: user.email,
+            storeName: user.storeName,
+          },
+          quantity: line_items[i].quantity,
+          product_id: product_id,
+          sku: line_items[i].sku,
+          shippingAddress: shipping_address,
+          price: price,
+          status: "pending"
+        });
+        return res.sendStatus(200);
+      }
+    } else { // Unsafe Hook
+      console.log("danger");
+    }
+  },
   /*
    * Adding a new order when adding a new product to the shopify store
    * This function is called when a new product is added to store
@@ -62,7 +103,7 @@ module.exports = {
           email: user.email,
           storeName: user.storeName,
         },
-        quantity: product_details.variants[idx].inventoryQuantity,
+        quantity: -1,
         product_id: product_id,
         sku: product_details.variants[idx].sku,
         shippingAddress: null,
@@ -193,24 +234,42 @@ module.exports = {
     }
 
     // Find the unprocessed orders from the DB
-    OrderModel.find({"client.email": user.email, status: "pending"}, function(err, orders) {
-      if (err) {
-        return res.json({
-          status: "failure",
-          error: {
-            message: "Error while find on database"
-          }
-        });
+    var p_orders = await OrderModel.find({ "client.email": user.email, status: "pending", quantity: -1});
+
+    var orders_details = [];
+    for(let i = 0; i < p_orders.length; i ++) {
+      let c_orders = await OrderModel.find({
+            "client.email": user.email, 
+            status: "pending", 
+            product_id: p_orders[i].product_id,
+            quantity: {$gt: 0}
+          });
+      let c_order_details = getOrderDetails(user, c_orders);
+
+      let product = user.myProducts.find(x => x.id === ("self-" + p_orders[i].product_id));
+      let variant = product.variants.find(x => x.sku === p_orders[i].sku);
+      
+      orders_details.push({
+        id: p_orders[i]._id,
+        client: p_orders[i].client,
+        quantity: p_orders[i].quantity,
+        product_id: p_orders[i].product_id,
+        sku: p_orders[i].sku,
+        status: p_orders[i].status,
+        shippingAddress: p_orders[i].shippingAddress,
+        price:  p_orders[i].price,
+        variant: {
+          title: product.title,
+          image: variant.imageSrc ? variant.imageSrc : product.images[0].src
+        },
+        childOrders: c_order_details
+      })
+    }
+    return res.json({
+      status: "success",
+      data: {
+        orders: orders_details
       }
-      
-      var orders_details = getOrderDetails(user, orders);
-      
-      return res.json({
-        status: "success",
-        data: {
-          orders: orders_details
-        }
-      });
     });
   },
   /*

@@ -7,6 +7,10 @@ const router = express.Router();
 
 const OrderController = require('../controller/order.controller');
 
+router.post('/order/paid', async (req, res, next) => {
+  await OrderController.shopifyOrderCreated(req, res, next);
+});
+
 router.post('/forgot-pwd', async (req, res, next) => { // Forgot password
   AuthController.forgotPwd(req, res, next);
 });

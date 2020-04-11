@@ -34,6 +34,10 @@ router.post('/user/reset-pwd', (req, res, next) => { // Reset the user's passwor
   UserController.resetUserPwd(req, res);
 });
 
+router.post('/user/addhook', (req, res, next) => {
+  UserController.addWebhook(req, res);
+});
+
 router.post('/user/set-rule', (req, res, next) => { // Set the user's price rule
   UserController.setPriceRule(req, res);
 });
