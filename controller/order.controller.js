@@ -320,7 +320,7 @@ module.exports = {
     }
 
     // Update the status
-    await OrderModel.updateOne({_id:order_id}, {status: "processed", shippingAddress:req.body.address }, function(err, doc) {
+    await OrderModel.updateOne({_id:order_id}, {status: "processed" }, function(err, doc) {
       if (err) {
         return res.json({
           status: "failure",
