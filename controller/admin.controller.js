@@ -1,3 +1,5 @@
+const fetch = require("node-fetch");
+
 const ProductModel = require('../model/product.model');
 const OrderModel = require('../model/order.model');
 const UserModel = require('../model/user.model');
@@ -89,6 +91,72 @@ module.exports = {
     });
   },
   /*
+   * Get the detail of an aliexpress product
+  */
+  addAliProduct: async function (req, res) {
+    var product_id = req.body.product_id;
+    console.log("here", product_id);
+    
+    const response = await fetch(
+      `http://api.onebound.cn/aliexpress/api_call.php?num_iid=${product_id}&api_name=item_get&lang=en&key=tel13823615529&secret=20200310`,
+      {
+        method: "GET",
+      }
+    );
+    const {item} = await response.json();
+    
+    // Product Title
+    product_title = item.title.split("| |  - AliExpress")[0];
+    // Product Images
+    product_images = [];
+    var imgs = item.item_imgs.item_img ? item.item_imgs.item_img : item.item_imgs;
+    for (var i = 0; i < imgs.length; i ++) {
+      product_images.push({src: imgs[i].url});
+    }
+    // Product variant options
+    var options = new Set();
+    for (let [key, value] of Object.entries(item.props_list)) {
+      var option = value.split(":")[0];
+      options.add(option);
+    }
+
+    var product_options = Array.from(options.values());
+    // Product variants
+    var variants = [];
+    for (i = 0; i < item.skus.sku.length; i ++) {
+      var options = [];
+
+      var _options = item.skus.sku[i].properties_name.split(":;");
+      for (j = 0; j < _options.length; j ++) {
+        var temp = _options[j].split("#");
+
+        if (temp.length > 1) options.push(temp[1].split(":")[0]);
+        else options.push(temp[0].split(":").pop());
+      }
+      var price = item.skus.sku[i].price;
+      var inventoryQuantity = item.skus.sku[i].quantity;
+      variants.push({options, price, inventoryQuantity});
+    }
+
+    // Add the product to product list
+    var product_details = {
+      category: "aliexpress",
+      title: product_title,
+      descriptionHtml: item.desc,
+      images: product_images,
+      options: product_options,
+      variants:  variants,
+      onSale: false,
+      importedCount: 0,
+      addedCount: 0,
+      soldCount: 0
+    };
+    console.log(product_details)
+    // Add product to the database
+    var product = await ProductModel.create(product_details);
+    return res.json({status : 'success'});
+  },
+  /*
   *  Add the self product to products' database
   *    @param req: the request that has the parameters from the front end
   *    @param res
@@ -133,8 +201,10 @@ module.exports = {
   *    @param res
   */
   editProduct: async function (req, res) {
+    console.log("editProduct")
     // Get the product id and details from req
     var product_id = req.body.id;
+    console.log(product_id)
     var product_details = {
       category: req.body.category,
       title: req.body.title,

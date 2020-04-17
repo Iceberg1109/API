@@ -34,6 +34,12 @@ router.post('/product/add', (req, res, next) => { // Add Product to the database
   AdminController.addProduct(req, res);
 });
 
+router.post('/ali_product/add', (req, res, next) => { // Add Product to the database
+  checkIsAdmin(req.user, res);
+
+  AdminController.addAliProduct(req, res);
+});
+
 router.post('/product/edit', (req, res, next) => { // Edit Product
   checkIsAdmin(req.user, res);
 
