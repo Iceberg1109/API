@@ -203,7 +203,7 @@ module.exports = {
   editProduct: async function (req, res) {
     console.log("editProduct")
     // Get the product id and details from req
-    var product_id = req.body.id;
+    var product_id = req.body._id;
     console.log(product_id)
     var product_details = {
       category: req.body.category,
