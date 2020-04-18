@@ -151,10 +151,10 @@ module.exports = {
       addedCount: 0,
       soldCount: 0
     };
-    console.log(product_details)
+
     // Add product to the database
     var product = await ProductModel.create(product_details);
-    return res.json({status : 'success'});
+    return res.json({status : 'success',data: product});
   },
   /*
   *  Add the self product to products' database
