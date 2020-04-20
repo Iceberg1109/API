@@ -26,7 +26,24 @@ router.post('/users/list', (req, res, next) => { // Send all users' list
   
   AdminController.getUsersList(req, res);
 });
+// Category related routes
+router.post('/category/list', (req, res) => { // List all the categories
+  checkIsAdmin(req.user, res);
 
+  AdminController.getAllCategories(req, res);
+});
+
+router.post('/category/add', (req, res) => { // Add new category to the database
+  checkIsAdmin(req.user, res);
+
+  AdminController.addNewCategory(req, res);
+});
+
+router.post('/category/remove', (req, res) => { // Add new category to the database
+  checkIsAdmin(req.user, res);
+
+  AdminController.removeCategory(req, res);
+});
 // Products related routes
 router.post('/product/add', (req, res, next) => { // Add Product to the database
   checkIsAdmin(req.user, res);

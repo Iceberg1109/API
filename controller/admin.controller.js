@@ -3,6 +3,7 @@ const fetch = require("node-fetch");
 const ProductModel = require('../model/product.model');
 const OrderModel = require('../model/order.model');
 const UserModel = require('../model/user.model');
+const CategoryModel = require('../model/category.model');
 
 /*
 *  This function is for order related requests,
@@ -356,5 +357,35 @@ module.exports = {
         users: user_list
       }
     });  
+  },
+  /*
+  *  List all categories
+  *    @param req
+  *    @param res
+  */
+  getAllCategories: async function (req, res) {
+    var categories = await CategoryModel.find({});
+    return res.json({status: "success", data: categories});  
+  },
+  /*
+  *  Add new category
+  *    @param req
+  *    @param res
+  */
+  addNewCategory: async function (req, res) {
+    var category = await CategoryModel.create({title: req.body.title});
+    return res.json({status: "success"});  
+  },
+  /*
+  *  Remove category
+  *    @param req
+  *    @param res
+  */
+  removeCategory: async function (req, res) {
+    const response = await CategoryModel.deleteOne({ _id: req.body.id });
+    if (response.deletedCount) {
+      return res.json({status: "success"});
+    }
+    return res.json({status: "failure"});
   },
 }
