@@ -20,7 +20,12 @@ module.exports = {
           return next(error);
         }
         if(!user) {
-          return res.json({status: "no user"});
+          return res.json({
+            status: "failure",
+            error: {
+              message: "Error while adding to store"
+            }
+          });
         }
         req.login(user, { session : false }, async (error) => {
           if( error ) {
